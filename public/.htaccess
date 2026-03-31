@@ -1,0 +1,11 @@
+# SPA (React Router): rutas como /admin/login deben servir index.html
+# Apache + mod_rewrite. Copiado a dist/ automáticamente desde public/
+RewriteEngine On
+RewriteBase /
+
+RewriteRule ^index\.html$ - [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule . /index.html [L]

@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 20% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 14%;
+
+    --primary: 240 68% 30%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 20%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 240 68% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 240 68% 30%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 220 14% 97%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-primary: 240 68% 30%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 220 20% 20%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 240 68% 30%;
+
+    /* Custom tokens */
+    --hero-overlay: 220 20% 14%;
+    --surface-warm: 220 14% 97%;
+    --surface-elevated: 0 0% 100%;
+    --navy: 240 68% 30%;
+    --navy-light: 240 68% 96%;
+    --amber: 38 92% 50%;
+    --amber-light: 38 92% 95%;
+    --success: 152 45% 40%;
+    --success-light: 152 45% 94%;
+  }
+
+  .dark {
+    --background: 220 20% 7%;
+    --foreground: 220 14% 93%;
+    --card: 220 18% 11%;
+    --card-foreground: 220 14% 93%;
+    --popover: 220 18% 11%;
+    --popover-foreground: 220 14% 93%;
+    --primary: 240 68% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 12% 16%;
+    --secondary-foreground: 220 14% 90%;
+    --muted: 220 12% 16%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 240 68% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 12% 18%;
+    --input: 220 12% 18%;
+    --ring: 240 68% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans font-bold;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+
+  .surface-warm {
+    background-color: hsl(var(--surface-warm));
+  }
+
+  .surface-elevated {
+    background-color: hsl(var(--surface-elevated));
+    box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.04), 0 1px 2px -1px hsl(var(--foreground) / 0.04);
+  }
+
+  .card-hover {
+    @apply transition-shadow duration-300 ease-out;
+  }
+
+  .card-hover:hover {
+    box-shadow: 0 8px 25px -5px hsl(var(--foreground) / 0.08), 0 4px 10px -6px hsl(var(--foreground) / 0.04);
+  }
+
+  .badge-status {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-disponible {
+    @apply badge-status;
+    background-color: hsl(var(--success-light));
+    color: hsl(var(--success));
+  }
+
+  .badge-alquilado {
+    @apply badge-status;
+    background-color: hsl(var(--amber-light));
+    color: hsl(var(--amber));
+  }
+
+  .badge-vendido {
+    @apply badge-status;
+    background-color: hsl(var(--destructive) / 0.12);
+    color: hsl(var(--destructive));
+  }
+}
+
+/* Scroll reveal animation */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-reveal {
+  animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-reveal-delay-1 { animation-delay: 80ms; }
+.animate-reveal-delay-2 { animation-delay: 160ms; }
+.animate-reveal-delay-3 { animation-delay: 240ms; }
+.animate-reveal-delay-4 { animation-delay: 320ms; }
