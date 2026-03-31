@@ -19,7 +19,7 @@ const SUPABASE_ANON_KEY =
 const BUSINESS_SCHEMA =
   (import.meta.env.VITE_BUSINESS_SCHEMA as string | undefined) ??
   (import.meta.env.NEXT_PUBLIC_BUSINESS_SCHEMA as string | undefined) ??
-  'osorio_inmueble';
+  'lilian_inmobiliaria';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

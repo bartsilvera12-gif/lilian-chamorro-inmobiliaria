@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { osorio } from '@/lib/supabase';
@@ -40,11 +40,12 @@ interface PropertyRow {
 export default function AdminPropertiesPage() {
   const { profile } = useAuth();
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
   const [properties, setProperties] = useState<PropertyRow[]>([]);
   const [barrios, setBarrios] = useState<MinRow[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<MinRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterOp, setFilterOp] = useState('');
@@ -110,6 +111,11 @@ export default function AdminPropertiesPage() {
 
   useEffect(() => { fetchData(); }, [profile, sortBy]);
 
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q != null) setSearch(q);
+  }, [searchParams]);
+
   const handleDelete = async (id: string) => {
     const { error } = await osorio.from('properties').delete().eq('id', id);
     if (error) {
@@ -136,12 +142,15 @@ export default function AdminPropertiesPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-5">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Propiedades</h1>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-sans font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-1">Administración</p>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-foreground tracking-tight">Propiedades</h1>
+          </div>
           <Link
             to="/admin/properties/new"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 active:scale-[0.97] transition-all"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-sans font-medium shadow-md hover:opacity-95 active:scale-[0.98] transition-all"
           >
             <Plus className="w-4 h-4" />
             Nueva Propiedad

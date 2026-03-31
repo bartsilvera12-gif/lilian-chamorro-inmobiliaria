@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Star, Quote, ArrowRight } from "lucide-react";
+import { Star, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchTestimonials, type Testimonial } from "@/lib/osorioRepository";
 import { translateFromEs } from "@/lib/autoTranslate";
@@ -17,16 +17,11 @@ export default function TestimonialsSection() {
       if (!active) return;
       setItems(rows);
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    if (lang === "es") {
-      setTranslatedById({});
-      return;
-    }
+    if (lang === "es") { setTranslatedById({}); return; }
     const target = lang === "en" ? "en" : "pt";
     let cancelled = false;
     (async () => {
@@ -38,9 +33,7 @@ export default function TestimonialsSection() {
       }
       if (!cancelled) setTranslatedById(next);
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [items, lang]);
 
   const visible = useMemo(() => items.slice(0, 3), [items]);
@@ -48,69 +41,63 @@ export default function TestimonialsSection() {
     lang === "es" ? item.review_es : translatedById[item.id] ?? item.review_es;
 
   return (
-    <section className="py-24 md:py-32">
+    <section className="py-20 md:py-28">
       <div className="container">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/8 mb-5">
-              <Quote className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-bold uppercase tracking-[0.15em] text-primary">
-                {t("testimonials.badge")}
-              </span>
-            </div>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-foreground leading-[1.08] tracking-tight">
-              {t("testimonials.title")}
-            </h2>
-            <p className="text-muted-foreground mt-4 text-base md:text-lg leading-relaxed">
-              {t("testimonials.subtitle")}
-            </p>
-          </div>
-          {items.length > 0 && (
-            <Link
-              to="/testimonios"
-              className="hidden md:inline-flex items-center gap-2.5 h-12 px-7 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.97] transition-all shadow-lg hover:shadow-xl"
-            >
-              {t("featured.view_all")} <ArrowRight className="w-4 h-4" />
-            </Link>
-          )}
+        {/* Header */}
+        <div className="text-center max-w-xl mx-auto mb-14">
+          <p className="section-label">{t("testimonials.badge")}</p>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground leading-tight">{t("testimonials.title")}</h2>
+          <p className="text-muted-foreground mt-3 text-sm leading-relaxed font-sans">{t("testimonials.subtitle")}</p>
         </div>
 
         {visible.length === 0 ? (
-          <p className="text-center text-muted-foreground">No hay reseñas cargadas.</p>
+          <p className="text-center text-muted-foreground font-sans">No hay reseñas cargadas.</p>
         ) : (
-          <div className="flex flex-wrap justify-center gap-6">
-            {visible.map((item, i) => (
-              <article
-                key={item.id}
-                className={`w-full md:w-[calc(50%-12px)] xl:w-[calc(33.333%-16px)] animate-reveal ${
-                  i > 0 ? `animate-reveal-delay-${Math.min(i, 4)}` : ""
-                } rounded-2xl overflow-hidden bg-card border border-border card-hover`}
-              >
-                <div className="p-6 md:p-7">
-                  <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center mb-4">
-                    <Quote className="w-4 h-4 text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {visible.map((item, i) => {
+              const isDark = i === 1;
+              return (
+                <article
+                  key={item.id}
+                  className={`animate-reveal ${i > 0 ? `animate-reveal-delay-${i}` : ''} rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col ${
+                    isDark
+                      ? 'bg-primary text-primary-foreground shadow-xl'
+                      : 'bg-card border border-border shadow-sm hover:shadow-md'
+                  }`}
+                >
+                  <div className="h-[3px] bg-accent" />
+
+                  <div className="p-7 flex flex-col flex-1">
+                    {/* Stars */}
+                    <div className="flex gap-1 mb-5">
+                      {[...Array(5)].map((_, s) => (
+                        <Star key={s} className={`w-[18px] h-[18px] ${
+                          s < item.stars
+                            ? 'fill-accent text-accent'
+                            : isDark ? 'text-primary-foreground/20' : 'text-border'
+                        }`} />
+                      ))}
+                    </div>
+
+                    {/* Review text */}
+                    <div className="flex-1 mb-6">
+                      <p className={`text-sm leading-[1.85] font-sans ${isDark ? 'text-primary-foreground/85' : 'text-foreground/70'}`}>
+                        <span className={`inline-block mr-1 align-text-top ${isDark ? 'text-accent/40' : 'text-accent/30'}`}>"</span>
+                        {getReview(item)}
+                        <span className={`inline-block ml-0.5 align-text-top ${isDark ? 'text-accent/40' : 'text-accent/30'}`}>"</span>
+                      </p>
+                    </div>
+
                   </div>
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, s) => (
-                      <Star
-                        key={s}
-                        className={`w-4 h-4 ${s < item.stars ? "fill-amber text-amber" : "text-muted-foreground/35"}`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm text-foreground/85 leading-relaxed line-clamp-8">{getReview(item)}</p>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
 
         {items.length > 0 && (
-          <div className="mt-12 text-center md:hidden">
-            <Link
-              to="/testimonios"
-              className="inline-flex items-center gap-2.5 h-12 px-8 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.97] transition-all shadow-lg"
-            >
+          <div className="mt-12 text-center">
+            <Link to="/testimonios" className="btn-gold">
               {t("featured.view_all")} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

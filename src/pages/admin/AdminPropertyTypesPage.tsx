@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { osorio } from '@/lib/supabase';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Tag, Plus, Pencil, Trash2, Loader2, X, Check, Search } from 'lucide-react';
+import { Tag, Plus, Pencil, Trash2, Loader2, Check, Search } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -15,15 +15,7 @@ interface PropertyTypeRow {
   coeficiente: number;
 }
 
-interface FormData {
-  nombre: string;
-  coeficiente: string;
-}
-
-const emptyForm: FormData = {
-  nombre: '',
-  coeficiente: '1.00',
-};
+const DEFAULT_COEFICIENTE = 1;
 
 export default function AdminPropertyTypesPage() {
   const { profile } = useAuth();
@@ -31,7 +23,8 @@ export default function AdminPropertyTypesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormData>(emptyForm);
+  const [editingRow, setEditingRow] = useState<PropertyTypeRow | null>(null);
+  const [nombre, setNombre] = useState('');
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -58,41 +51,38 @@ export default function AdminPropertyTypesPage() {
   }, [profile]);
 
   const openCreate = () => {
-    setForm(emptyForm);
+    setNombre('');
     setEditingId(null);
+    setEditingRow(null);
     setShowForm(true);
   };
 
   const openEdit = (row: PropertyTypeRow) => {
-    setForm({
-      nombre: row.nombre ?? '',
-      coeficiente: (row.coeficiente ?? 1).toFixed(2),
-    });
+    setNombre(row.nombre ?? '');
     setEditingId(row.id);
+    setEditingRow(row);
     setShowForm(true);
   };
 
   const closeForm = () => {
     setShowForm(false);
     setEditingId(null);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setEditingRow(null);
   };
 
   const handleSave = async () => {
-    if (!form.nombre || !form.coeficiente) {
-      toast.error('Nombre y coeficiente son obligatorios');
+    const name = nombre.trim();
+    if (!name) {
+      toast.error('El nombre es obligatorio');
       return;
     }
 
     setSaving(true);
 
-    const payload = {
-      nombre: form.nombre.trim(),
-      coeficiente: parseFloat(form.coeficiente),
-    };
+    const payload =
+      editingId && editingRow
+        ? { nombre: name, coeficiente: editingRow.coeficiente }
+        : { nombre: name, coeficiente: DEFAULT_COEFICIENTE };
 
     let error;
     if (editingId) {
@@ -149,38 +139,32 @@ export default function AdminPropertyTypesPage() {
         </div>
 
         {showForm && (
-          <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+          <div className="bg-card border border-border rounded-xl p-5 space-y-4 max-w-md">
             <h2 className="text-sm font-semibold text-foreground">
               {editingId ? 'Editar Tipo de Propiedad' : 'Nuevo Tipo de Propiedad'}
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Nombre *</label>
-                <input name="nombre" value={form.nombre} onChange={handleChange} className={inputCls} />
-              </div>
-
-              <div>
-                <label className={labelCls}>Coeficiente C_ciudad *</label>
-                <input
-                  name="coeficiente"
-                  type="number"
-                  step="0.01"
-                  value={form.coeficiente}
-                  onChange={handleChange}
-                  className={inputCls}
-                />
-              </div>
+            <div>
+              <label className={labelCls}>Nombre *</label>
+              <input
+                name="nombre"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                className={inputCls}
+                autoComplete="off"
+              />
             </div>
 
             <div className="flex gap-2 justify-end">
               <button
+                type="button"
                 onClick={closeForm}
                 className="px-3 py-2 rounded-xl border border-border text-sm hover:bg-muted transition-colors"
               >
                 Cancelar
               </button>
               <button
+                type="button"
                 onClick={handleSave}
                 disabled={saving}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 active:scale-[0.97] transition-all"
@@ -208,7 +192,6 @@ export default function AdminPropertyTypesPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nombre</th>
-                    <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Coeficiente</th>
                     <th className="text-right px-4 py-3 font-medium text-muted-foreground">Acciones</th>
                   </tr>
                 </thead>
@@ -216,9 +199,6 @@ export default function AdminPropertyTypesPage() {
                   {filtered.map(n => (
                     <tr key={n.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 font-medium text-foreground">{n.nombre}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-foreground whitespace-nowrap hidden sm:table-cell">
-                        {n.coeficiente.toFixed(2)}
-                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
                           <button
@@ -262,4 +242,3 @@ export default function AdminPropertyTypesPage() {
     </AdminLayout>
   );
 }
-

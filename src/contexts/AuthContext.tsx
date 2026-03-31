@@ -35,9 +35,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('id', userId)
       .single();
+
     if (!error && data) {
       setProfile(data as Profile);
+      return;
     }
+
+    // Fallback legacy: algunos despliegues mantienen el perfil admin en public.profiles.
+    const { data: legacyData, error: legacyError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (!legacyError && legacyData) {
+      setProfile(legacyData as Profile);
+      return;
+    }
+
+    setProfile(null);
   };
 
   useEffect(() => {

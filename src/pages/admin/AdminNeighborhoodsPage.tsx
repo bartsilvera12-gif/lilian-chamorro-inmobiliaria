@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { osorio } from '@/lib/supabase';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { MapPin, Plus, Pencil, Trash2, Loader2, X, Check, Search } from 'lucide-react';
+import { MapPin, Plus, Pencil, Trash2, Loader2, Check, Search } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -17,19 +17,12 @@ interface BarrioRow {
   precio_m2_max: number;
 }
 
-interface FormData {
-  nombre: string;
-  coeficiente: string;
-  precio_m2_min: string;
-  precio_m2_max: string;
-}
-
-const emptyForm: FormData = {
-  nombre: '',
-  coeficiente: '1.00',
-  precio_m2_min: '',
-  precio_m2_max: '',
-};
+/** Valores por defecto en BD para campos de calculadora (no editables en admin). */
+const DEFAULT_CALC = {
+  coeficiente: 1,
+  precio_m2_min: 0,
+  precio_m2_max: 0,
+} as const;
 
 export default function AdminNeighborhoodsPage() {
   const { profile } = useAuth();
@@ -37,7 +30,9 @@ export default function AdminNeighborhoodsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormData>(emptyForm);
+  /** Fila original al editar (para no sobrescribir coeficientes/precios ocultos). */
+  const [editingRow, setEditingRow] = useState<BarrioRow | null>(null);
+  const [nombre, setNombre] = useState('');
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -53,31 +48,51 @@ export default function AdminNeighborhoodsPage() {
 
   useEffect(() => { fetchData(); }, [profile]);
 
-  const openCreate = () => { setForm(emptyForm); setEditingId(null); setShowForm(true); };
-  const openEdit = (n: BarrioRow) => {
-    setForm({
-      nombre: n.nombre,
-      coeficiente: (n.coeficiente ?? 1).toFixed(2),
-      precio_m2_min: n.precio_m2_min?.toString() ?? '',
-      precio_m2_max: n.precio_m2_max?.toString() ?? '',
-    });
-    setEditingId(n.id);
+  const openCreate = () => {
+    setNombre('');
+    setEditingId(null);
+    setEditingRow(null);
     setShowForm(true);
   };
-  const closeForm = () => { setShowForm(false); setEditingId(null); };
+
+  const openEdit = (n: BarrioRow) => {
+    setNombre(n.nombre);
+    setEditingId(n.id);
+    setEditingRow(n);
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setEditingRow(null);
+  };
 
   const handleSave = async () => {
-    if (!form.nombre || !form.precio_m2_min || !form.precio_m2_max || !form.coeficiente) {
-      toast.error('Nombre, coeficiente y rango de precio m² son obligatorios');
+    const name = nombre.trim();
+    if (!name) {
+      toast.error('El nombre es obligatorio');
       return;
     }
+
     setSaving(true);
-    const payload = {
-      nombre: form.nombre.trim(),
-      coeficiente: parseFloat(form.coeficiente),
-      precio_m2_min: parseFloat(form.precio_m2_min),
-      precio_m2_max: parseFloat(form.precio_m2_max),
-    };
+    let payload: Record<string, string | number>;
+
+    if (editingId && editingRow) {
+      payload = {
+        nombre: name,
+        coeficiente: editingRow.coeficiente,
+        precio_m2_min: editingRow.precio_m2_min,
+        precio_m2_max: editingRow.precio_m2_max,
+      };
+    } else {
+      payload = {
+        nombre: name,
+        coeficiente: DEFAULT_CALC.coeficiente,
+        precio_m2_min: DEFAULT_CALC.precio_m2_min,
+        precio_m2_max: DEFAULT_CALC.precio_m2_max,
+      };
+    }
 
     let error;
     if (editingId) {
@@ -95,10 +110,6 @@ export default function AdminNeighborhoodsPage() {
     const { error } = await osorio.from('barrios').delete().eq('id', id);
     if (error) toast.error('Error: ' + error.message);
     else { toast.success('Barrio eliminado'); fetchData(); }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const filtered = items.filter(n => !search || n.nombre.toLowerCase().includes(search.toLowerCase()));
@@ -121,29 +132,21 @@ export default function AdminNeighborhoodsPage() {
         </div>
 
         {showForm && (
-          <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-                    <h2 className="text-sm font-semibold text-foreground">{editingId ? 'Editar Barrio' : 'Nuevo Barrio'}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className={labelCls}>Nombre *</label>
-                        <input name="nombre" value={form.nombre} onChange={handleChange} className={inputCls} />
-              </div>
-              <div>
-                        <label className={labelCls}>Coeficiente C_ciudad *</label>
-                        <input name="coeficiente" type="number" step="0.01" value={form.coeficiente} onChange={handleChange} className={inputCls} />
-              </div>
-              <div>
-                        <label className={labelCls}>Precio m² mínimo (USD) *</label>
-                        <input name="precio_m2_min" type="number" step="0.01" value={form.precio_m2_min} onChange={handleChange} className={inputCls} />
-              </div>
-              <div>
-                        <label className={labelCls}>Precio m² máximo (USD) *</label>
-                        <input name="precio_m2_max" type="number" step="0.01" value={form.precio_m2_max} onChange={handleChange} className={inputCls} />
-              </div>
+          <div className="bg-card border border-border rounded-xl p-5 space-y-4 max-w-md">
+            <h2 className="text-sm font-semibold text-foreground">{editingId ? 'Editar Barrio' : 'Nuevo Barrio'}</h2>
+            <div>
+              <label className={labelCls}>Nombre *</label>
+              <input
+                name="nombre"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                className={inputCls}
+                autoComplete="off"
+              />
             </div>
             <div className="flex gap-2 justify-end">
-              <button onClick={closeForm} className="px-3 py-2 rounded-xl border border-border text-sm hover:bg-muted transition-colors">Cancelar</button>
-              <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 active:scale-[0.97] transition-all">
+              <button type="button" onClick={closeForm} className="px-3 py-2 rounded-xl border border-border text-sm hover:bg-muted transition-colors">Cancelar</button>
+              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 active:scale-[0.97] transition-all">
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                 {editingId ? 'Guardar' : 'Crear'}
               </button>
@@ -165,8 +168,6 @@ export default function AdminNeighborhoodsPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nombre</th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">C_ciudad</th>
-                    <th className="text-right px-4 py-3 font-medium text-muted-foreground">Precio m² (USD)</th>
                     <th className="text-right px-4 py-3 font-medium text-muted-foreground">Acciones</th>
                   </tr>
                 </thead>
@@ -174,8 +175,6 @@ export default function AdminNeighborhoodsPage() {
                   {filtered.map(n => (
                     <tr key={n.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 font-medium text-foreground">{n.nombre}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-foreground whitespace-nowrap hidden sm:table-cell">{n.coeficiente.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-foreground whitespace-nowrap">USD {n.precio_m2_min} – {n.precio_m2_max}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => openEdit(n)} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>

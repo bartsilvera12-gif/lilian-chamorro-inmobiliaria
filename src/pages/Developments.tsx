@@ -5,7 +5,7 @@ import { fetchDevelopments, type DevelopmentItem } from "@/lib/osorioRepository"
 import { translateFromEs } from "@/lib/autoTranslate";
 import { MessageCircle } from "lucide-react";
 
-const WHATSAPP_NUMBER = "595987276000";
+const WHATSAPP_NUMBER = "595986965042";
 
 export default function DevelopmentsPage() {
   const { lang } = useLanguage();
@@ -19,16 +19,11 @@ export default function DevelopmentsPage() {
       if (!active) return;
       setItems(rows);
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    if (lang === "es") {
-      setTranslatedById({});
-      return;
-    }
+    if (lang === "es") { setTranslatedById({}); return; }
     const target = lang === "en" ? "en" : "pt";
     let cancelled = false;
     (async () => {
@@ -40,9 +35,7 @@ export default function DevelopmentsPage() {
       }
       if (!cancelled) setTranslatedById(next);
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [items, lang]);
 
   const title = useMemo(() => {
@@ -62,41 +55,35 @@ export default function DevelopmentsPage() {
 
   return (
     <Layout>
-      <section className="py-24 md:py-32 surface-warm">
+      <section className="bg-primary py-16 md:py-20">
         <div className="container">
-          <div className="text-center mb-14 max-w-2xl mx-auto">
-            <h1 className="text-3xl md:text-5xl font-extrabold text-foreground leading-[1.08] tracking-tight">
-              {title}
-            </h1>
-            <p className="text-muted-foreground mt-4 text-base md:text-lg leading-relaxed">{subtitle}</p>
-          </div>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary-foreground">{title}</h1>
+          <p className="text-primary-foreground/40 text-sm font-sans mt-2">{subtitle}</p>
+        </div>
+      </section>
 
+      <section className="py-10 md:py-14">
+        <div className="container">
           {items.length === 0 ? (
-            <p className="text-center text-muted-foreground">No hay desarrollos cargados.</p>
+            <p className="text-center text-muted-foreground font-sans py-12">No hay desarrollos cargados.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {items.map((item, i) => (
                 <article
                   key={item.id}
-                  className={`animate-reveal ${i > 0 ? `animate-reveal-delay-${Math.min(i, 4)}` : ""} rounded-2xl overflow-hidden bg-card border border-border card-hover`}
+                  className={`animate-reveal ${i > 0 ? `animate-reveal-delay-${Math.min(i, 4)}` : ""} rounded-xl overflow-hidden bg-card border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-premium`}
                 >
                   <div className="aspect-[4/3] overflow-hidden">
-                    <img
-                      src={item.image_url}
-                      alt="Desarrollo"
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
+                    <img src={item.image_url} alt="Desarrollo" className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
                   </div>
                   <div className="p-4">
-                    <p className="text-sm text-foreground/85 leading-relaxed line-clamp-3 mb-4">{getDesc(item)}</p>
+                    <p className="text-sm text-foreground/75 leading-relaxed line-clamp-3 mb-4 font-sans">{getDesc(item)}</p>
                     <a
                       href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hola, me interesa más información sobre un desarrollo.")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all"
+                      target="_blank" rel="noopener noreferrer"
+                      className="btn-gold text-xs h-9 px-4"
                     >
-                      <MessageCircle className="w-4 h-4" />
-                      Más info
+                      <MessageCircle className="w-3.5 h-3.5" /> Más info
                     </a>
                   </div>
                 </article>
@@ -108,4 +95,3 @@ export default function DevelopmentsPage() {
     </Layout>
   );
 }
-

@@ -1,0 +1,10 @@
+# Configuración local (Supabase CLI). En el proyecto alojado en supabase.com
+# también debes añadir el schema en: Settings → API → Exposed schemas.
+#
+# https://supabase.com/docs/guides/api/using-custom-schemas
+
+[api]
+enabled = true
+# Schemas visibles para PostgREST / supabase-js .schema('...')
+# Incluye los habituales + lilian_inmobiliaria (ajusta si tu proyecto usa otros).
+schemas = ["public", "graphql_public", "storage", "lilian_inmobiliaria"]

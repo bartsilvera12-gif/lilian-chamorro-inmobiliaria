@@ -41,7 +41,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
 
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-64 bg-sidebar-background border-r border-sidebar-border flex flex-col transition-transform duration-200 lg:translate-x-0 lg:static lg:z-auto',
+          'fixed inset-y-0 left-0 z-50 h-screen min-h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-200 lg:translate-x-0 lg:static lg:z-auto lg:h-auto lg:min-h-screen',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >

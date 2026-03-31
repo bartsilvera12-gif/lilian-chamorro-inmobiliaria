@@ -300,7 +300,7 @@ export default function AdminPropertyFormPage() {
             <div>
               <label className={labelCls}>Barrio *</label>
               <StyledSelect icon={MapPin} name="neighborhood_id" value={form.neighborhood_id} onChange={handleChange} required>
-                <option value="">{t('calc.select_barrio')}</option>
+                <option value="">Seleccionar barrio</option>
                 {neighborhoods.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
               </StyledSelect>
             </div>

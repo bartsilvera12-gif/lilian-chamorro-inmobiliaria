@@ -15,7 +15,7 @@ const es: Translations = {
 
   // Hero
   'hero.title': 'Tu próximo hogar en Asunción',
-  'hero.subtitle': 'Compra, venta y alquiler de inmuebles con la confianza de OSORIO INMOBILIARIA EAS',
+  'hero.subtitle': 'Compra, venta y alquiler de inmuebles con asesoramiento profesional y la confianza de Lilian Chamorro.',
   'hero.search.barrio': 'Barrio',
   'hero.search.tipo': 'Tipo de propiedad',
   'hero.search.operacion': 'Operación',
@@ -49,6 +49,7 @@ const es: Translations = {
   'featured.quote': 'Cotizar',
   'featured.view_all': 'Ver todas',
   'featured.view_all_properties': 'Ver todas las propiedades',
+  'featured.empty': 'No hay propiedades para mostrar.',
 
   // Properties
   'properties.title': 'Todas las propiedades',
@@ -106,7 +107,7 @@ const es: Translations = {
   // Testimonials
   'testimonials.badge': 'Testimonios',
   'testimonials.title': 'Lo que dicen nuestros clientes',
-  'testimonials.subtitle': 'Experiencias reales con OSORIO INMOBILIARIA EAS',
+  'testimonials.subtitle': 'Experiencias reales de nuestros clientes',
   'testimonials.item_1': 'Un servicio inmobiliario excepcional, centrado en el cliente. Desde el primer contacto, los agentes demostraron un profundo entendimiento de mis requerimientos como profesional con necesidades específicas. Su enfoque no fue el de cerrar un trato rápido, sino el de encontrar la solución inmobiliaria más adecuada a mis objetivos.\nEl proceso destacó por su transparencia absoluta: contratos claros, sin cláusulas ambiguas, y plazos cumplidos al día. Valoro especialmente la eficiencia sin sacrificar el trato personalizado, algo que esta inmobiliaria logró con creces.\nSin duda, los consideraré para futuros proyectos y los recomendaré a mi red de contactos.',
   'testimonials.item_2': 'El proceso fue transparente, sin sorpresas de último momento, y siempre estuvieron disponibles para resolver mis dudas. ¡Recomendado 100%! Fueron tan atentos que, si tuviera que repetir el proceso, no lo pensaría dos veces.',
   'testimonials.item_3': 'Buen servicio, atención rápida y clara.\nQuedé satisfecho con el trato de esta inmobiliaria. Me mostraron propiedades acordes a lo que buscaba, los agentes fueron profesionales y el proceso de alquiler fue ágil, recomendado 100%!',
@@ -114,15 +115,15 @@ const es: Translations = {
 
   // Success cases
   'success.title': 'Casos de éxito',
-  'success.subtitle': 'Historias reales de clientes que lograron sus objetivos inmobiliarios.',
+  'success.subtitle': 'Historias reales de clientes conformes que lograron sus objetivos inmobiliarios.',
   'success.prev': 'Anterior',
   'success.next': 'Siguiente',
   'success.case_label': 'Caso de éxito',
   'success.go_to_case': 'Ir al caso',
-  'success.item_1': 'Venta concretada en tiempo récord con estrategia de precio y difusión.',
-  'success.item_2': 'Alquiler asegurado con inquilino calificado y gestión integral.',
-  'success.item_3': 'Compra asistida con evaluación de zona y negociación efectiva.',
-  'success.item_4': 'Revalorización de activo con mejoras y comercialización profesional.',
+  'success.item_1': 'María vendió su casa en Villa Morra en pocos meses; hoy está conforme y recomienda el equipo de Lilian Chamorro Inmobiliaria.',
+  'success.item_2': 'Roberto alquiló su departamento con un inquilino verificado y quedó muy conforme con la gestión transparente de principio a fin.',
+  'success.item_3': 'La familia Gómez compró su casa en Lambaré con asesoramiento cercano y negociación clara; celebraron el cierre con total confianza.',
+  'success.item_4': 'Laura revalorizó su propiedad con una estrategia de venta profesional y recibió una oferta que superó sus expectativas.',
 
   // Quote modal
   'quote.title': 'Solicitar cotización',
@@ -152,6 +153,7 @@ const es: Translations = {
 
   // Footer
   'footer.rights': 'Todos los derechos reservados',
+  'footer.developed_by': 'Desarrollado por Neura',
   'footer.tagline': 'Edificando Valor: Protección e Inversion Inmobiliaria.',
   'footer.phone': 'Teléfono / WhatsApp',
   'footer.location': 'Asunción, Paraguay',
@@ -217,6 +219,7 @@ const en: Translations = {
   'featured.quote': 'Request quote',
   'featured.view_all': 'View all',
   'featured.view_all_properties': 'View all properties',
+  'featured.empty': 'No properties to show.',
 
   'properties.title': 'All properties',
   'properties.filters': 'Filters',
@@ -270,22 +273,22 @@ const en: Translations = {
 
   'testimonials.badge': 'Testimonials',
   'testimonials.title': 'What our clients say',
-  'testimonials.subtitle': 'Real experiences with OSORIO INMOBILIARIA EAS',
+  'testimonials.subtitle': 'Real experiences from our clients',
   'testimonials.item_1': 'An exceptional real estate service, truly client-focused. From the first contact, the agents showed a deep understanding of my requirements as a professional with specific needs. Their approach was not to close a quick deal, but to find the real estate solution that best fit my goals.\nThe process stood out for its total transparency: clear contracts, no ambiguous clauses, and deadlines met on time. I especially value their efficiency without sacrificing personalized service, something this agency achieved brilliantly.\nWithout a doubt, I will consider them for future projects and recommend them to my network.',
   'testimonials.item_2': 'The process was transparent, with no last-minute surprises, and they were always available to answer my questions. 100% recommended! They were so attentive that, if I had to go through the process again, I would not hesitate for a second.',
   'testimonials.item_3': 'Good service, fast and clear attention.\nI was satisfied with this agency\'s service. They showed me properties aligned with what I was looking for, the agents were professional, and the rental process was agile, 100% recommended!',
   'testimonials.item_4': 'The personalized attention they provide is amazing! They not only solved everything quickly, but also cared about details that other agencies usually ignore. Hard to find that nowadays! What I value the most is their honesty: they did not try to sell me something that was not right for me.',
 
   'success.title': 'Success cases',
-  'success.subtitle': 'Real stories of clients who achieved their real estate goals.',
+  'success.subtitle': 'Real stories of satisfied clients who reached their real estate goals.',
   'success.prev': 'Previous',
   'success.next': 'Next',
   'success.case_label': 'Success case',
   'success.go_to_case': 'Go to case',
-  'success.item_1': 'Sale closed in record time with pricing strategy and promotion.',
-  'success.item_2': 'Secured rental with qualified tenant and full management.',
-  'success.item_3': 'Assisted purchase with area evaluation and effective negotiation.',
-  'success.item_4': 'Asset revaluation with improvements and professional commercialization.',
+  'success.item_1': 'María sold her home in Villa Morra in just a few months; she is happy and recommends the Lilian Chamorro Inmobiliaria team.',
+  'success.item_2': 'Roberto rented his apartment to a vetted tenant and was very satisfied with transparent management from start to finish.',
+  'success.item_3': 'The Gómez family bought their home in Lambaré with close guidance and clear negotiation; they celebrated the closing with full confidence.',
+  'success.item_4': 'Laura revalued her property with a professional sales strategy and received an offer that exceeded her expectations.',
 
 
   'quote.title': 'Request quote',
@@ -312,6 +315,7 @@ const en: Translations = {
   'banner.instant_estimate': 'Instant estimate',
 
   'footer.rights': 'All rights reserved',
+  'footer.developed_by': 'Developed by Neura',
   'footer.tagline': 'Building value: real estate protection and investment.',
   'footer.phone': 'Phone / WhatsApp',
   'footer.location': 'Asunción, Paraguay',
@@ -376,6 +380,7 @@ const pt: Translations = {
   'featured.quote': 'Solicitar cotação',
   'featured.view_all': 'Ver todas',
   'featured.view_all_properties': 'Ver todos os imóveis',
+  'featured.empty': 'Não há imóveis para exibir.',
 
   'properties.title': 'Todos os imóveis',
   'properties.filters': 'Filtros',
@@ -429,22 +434,22 @@ const pt: Translations = {
 
   'testimonials.badge': 'Depoimentos',
   'testimonials.title': 'O que dizem nossos clientes',
-  'testimonials.subtitle': 'Experiências reais com a OSORIO INMOBILIARIA EAS',
+  'testimonials.subtitle': 'Experiências reais dos nossos clientes',
   'testimonials.item_1': 'Um serviço imobiliário excepcional, focado no cliente. Desde o primeiro contato, os agentes demonstraram um profundo entendimento das minhas necessidades como profissional com requisitos específicos. A abordagem deles não foi fechar um negócio rápido, mas encontrar a solução imobiliária mais adequada aos meus objetivos.\nO processo se destacou pela transparência total: contratos claros, sem cláusulas ambíguas, e prazos cumpridos no dia. Valorizo especialmente a eficiência sem abrir mão do atendimento personalizado, algo que esta imobiliária entregou com excelência.\nSem dúvida, vou considerá-los para projetos futuros e recomendá-los à minha rede de contatos.',
   'testimonials.item_2': 'O processo foi transparente, sem surpresas de última hora, e eles sempre estiveram disponíveis para tirar minhas dúvidas. 100% recomendado! Foram tão atenciosos que, se eu tivesse que repetir o processo, não pensaria duas vezes.',
   'testimonials.item_3': 'Bom serviço, atendimento rápido e claro.\nFiquei satisfeito com o atendimento desta imobiliária. Eles me mostraram imóveis de acordo com o que eu buscava, os agentes foram profissionais e o processo de locação foi ágil, 100% recomendado!',
   'testimonials.item_4': 'O atendimento personalizado que eles oferecem é excelente! Não só resolveram tudo rapidamente, como também se preocuparam com detalhes que outras imobiliárias ignoram. Difícil encontrar isso hoje em dia! O que mais valorizo é a honestidade: não tentaram me vender algo que não me convinha.',
 
   'success.title': 'Casos de sucesso',
-  'success.subtitle': 'Histórias reais de clientes que alcançaram seus objetivos imobiliários.',
+  'success.subtitle': 'Histórias reais de clientes satisfeitos que alcançaram seus objetivos imobiliários.',
   'success.prev': 'Anterior',
   'success.next': 'Próximo',
   'success.case_label': 'Caso de sucesso',
   'success.go_to_case': 'Ir para o caso',
-  'success.item_1': 'Venda concluída em tempo recorde com estratégia de preço e divulgação.',
-  'success.item_2': 'Aluguel garantido com inquilino qualificado e gestão completa.',
-  'success.item_3': 'Compra assistida com avaliação da região e negociação eficaz.',
-  'success.item_4': 'Revalorização do ativo com melhorias e comercialização profissional.',
+  'success.item_1': 'María vendeu sua casa em Villa Morra em poucos meses; hoje está satisfeita e recomenda a equipe da Lilian Chamorro Inmobiliaria.',
+  'success.item_2': 'Roberto alugou seu apartamento com inquilino verificado e ficou muito satisfeito com a gestão transparente do início ao fim.',
+  'success.item_3': 'A família Gómez comprou sua casa em Lambaré com assessoria próxima e negociação clara; comemoraram o fechamento com total confiança.',
+  'success.item_4': 'Laura revalorizou seu imóvel com uma estratégia de venda profissional e recebeu uma proposta que superou suas expectativas.',
 
   'quote.title': 'Solicitar cotação',
   'quote.name': 'Nome completo',
@@ -470,6 +475,7 @@ const pt: Translations = {
   'banner.instant_estimate': 'Estimativa instantânea',
 
   'footer.rights': 'Todos os direitos reservados',
+  'footer.developed_by': 'Desenvolvido por Neura',
   'footer.tagline': 'Construindo valor: proteção e investimento imobiliário.',
   'footer.phone': 'Telefone / WhatsApp',
   'footer.location': 'Assunção, Paraguai',

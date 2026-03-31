@@ -24,7 +24,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           <p className="text-sm font-medium text-foreground">{profile?.full_name}</p>
           <p className="text-xs text-muted-foreground">{profile?.email}</p>
         </div>
-        <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+        <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-accent-foreground text-sm font-bold">
           {profile?.full_name?.charAt(0)?.toUpperCase() ?? 'A'}
         </div>
       </div>

@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Menu, X, Home, Building2, Calculator, Phone, Construction } from 'lucide-react';
+import { Menu, X, Home, Building2, Phone, Construction } from 'lucide-react';
 import { Language } from '@/i18n/translations';
 import { scrollToHashElement } from '@/lib/hashScroll';
-
+import logoLC from '@/assets/logo-lc.png';
 const LANG_LABELS: Record<Language, string> = { es: 'ES', en: 'EN', pt: 'PT' };
 
 export default function Navbar() {
@@ -17,7 +17,6 @@ export default function Navbar() {
     { to: '/', label: t('nav.home'), icon: Home },
     { to: '/propiedades', label: t('nav.properties'), icon: Building2 },
     { to: '/desarrollo', label: t('nav.developments'), icon: Construction },
-    { to: '/#calculadora', label: t('nav.calculator'), icon: Calculator },
     { to: '/#contacto', label: t('nav.contact'), icon: Phone },
   ];
 
@@ -26,9 +25,7 @@ export default function Navbar() {
       const h = '#' + to.split('#')[1];
       return location.pathname === '/' && location.hash === h;
     }
-    if (to === '/') {
-      return location.pathname === '/' && !location.hash;
-    }
+    if (to === '/') return location.pathname === '/' && !location.hash;
     return location.pathname === to;
   };
 
@@ -48,51 +45,38 @@ export default function Navbar() {
   }, [location.pathname, navigate]);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-border">
-      <div className="container flex h-14 items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <img
-            src="https://res.cloudinary.com/drupicep5/image/upload/v1774017496/b4ca9fde-39bd-47b1-9d49-f27f3a997c28.png"
-            alt="OSORIO Inmobiliaria EAS"
-            className="h-8 w-auto object-contain"
-          />
-          <div className="hidden sm:block">
-            <span className="font-extrabold text-base leading-none tracking-tight text-foreground">OSORIO</span>
-            <span className="block text-[9px] font-medium tracking-[0.2em] text-muted-foreground uppercase">Inmobiliaria EAS</span>
-          </div>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-primary backdrop-blur-md border-b border-white/10">
+      <div className="container flex h-16 items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <img src={logoLC} alt="Lilian Chamorro" className="h-16 w-auto object-contain" />
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-0.5">
+        <div className="hidden md:flex items-center gap-1">
           {links.map(link => (
             <Link
               key={link.to}
               to={link.to}
               onClick={e => handleNavClick(e, link.to)}
-              className={`relative px-4 py-1.5 text-sm font-medium transition-colors duration-150 ${
-                isActive(link.to)
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+              className={`px-3.5 py-2 text-[13px] font-medium font-sans tracking-wide transition-colors duration-200 ${
+                isActive(link.to) ? 'text-accent' : 'text-primary-foreground/60 hover:text-primary-foreground'
               }`}
             >
               {link.label}
               {isActive(link.to) && (
-                <span className="absolute inset-x-1 -bottom-[17px] h-[2px] bg-primary rounded-full" />
+                <span className="block h-0.5 bg-accent rounded-full mt-0.5" />
               )}
             </Link>
           ))}
         </div>
 
-        {/* Language + mobile toggle */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-lg border border-border overflow-hidden">
+          <div className="hidden sm:flex items-center border border-primary-foreground/20 rounded-md overflow-hidden">
             {(['es', 'en', 'pt'] as Language[]).map(l => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-2.5 py-1 text-xs font-semibold transition-colors duration-150 ${
-                  lang === l ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+                className={`px-2.5 py-1 text-[10px] font-semibold font-sans uppercase tracking-wider transition-colors ${
+                  lang === l ? 'bg-accent text-primary' : 'text-primary-foreground/50 hover:text-primary-foreground'
                 }`}
               >
                 {LANG_LABELS[l]}
@@ -100,7 +84,7 @@ export default function Navbar() {
             ))}
           </div>
           <button
-            className="md:hidden p-2 rounded-md hover:bg-muted transition-colors"
+            className="md:hidden p-2 text-primary-foreground/60 hover:text-primary-foreground transition-colors"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -109,22 +93,29 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-border bg-white pb-4">
+        <div className="md:hidden bg-primary border-t border-white/10 pb-3">
           {links.map(link => (
             <Link
               key={link.to}
               to={link.to}
               onClick={e => { handleNavClick(e, link.to); setOpen(false); }}
-              className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${
-                isActive(link.to) ? 'text-primary bg-primary/5' : 'text-foreground hover:bg-muted'
+              className={`flex items-center gap-3 px-6 py-3 text-sm font-medium font-sans transition-colors ${
+                isActive(link.to) ? 'text-accent' : 'text-primary-foreground/60 hover:text-primary-foreground'
               }`}
             >
               <link.icon className="w-4 h-4" />
               {link.label}
             </Link>
           ))}
+          <div className="flex items-center gap-0 mx-6 mt-2 border border-primary-foreground/20 rounded-md overflow-hidden w-fit">
+            {(['es', 'en', 'pt'] as Language[]).map(l => (
+              <button key={l} onClick={() => setLang(l)}
+                className={`px-2.5 py-1 text-[10px] font-semibold font-sans uppercase tracking-wider transition-colors ${lang === l ? 'bg-accent text-primary' : 'text-primary-foreground/50 hover:text-primary-foreground'}`}>
+                {LANG_LABELS[l]}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </nav>

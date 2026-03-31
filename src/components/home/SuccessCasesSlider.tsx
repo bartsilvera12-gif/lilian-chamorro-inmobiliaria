@@ -1,12 +1,46 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Award, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Award } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { fetchSuccessCases, type SuccessCase } from "@/lib/osorioRepository";
 import { translateFromEs } from "@/lib/autoTranslate";
 
 const FALLBACK_CASES: SuccessCase[] = [
-  { id: "1", image_url: "", description_es: "Venta concretada en tiempo récord con estrategia de precio y difusión.", sort_order: 1, is_active: true },
-  { id: "2", image_url: "", description_es: "Alquiler asegurado con inquilino calificado y gestión integral.", sort_order: 2, is_active: true },
+  {
+    id: "fb-1",
+    image_url:
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80",
+    description_es:
+      "María vendió su casa en Villa Morra en pocos meses; hoy está conforme y recomienda el equipo de Lilian Chamorro Inmobiliaria.",
+    sort_order: 1,
+    is_active: true,
+  },
+  {
+    id: "fb-2",
+    image_url:
+      "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=1200&q=80",
+    description_es:
+      "Roberto alquiló su departamento con un inquilino verificado y quedó muy conforme con la gestión transparente de principio a fin.",
+    sort_order: 2,
+    is_active: true,
+  },
+  {
+    id: "fb-3",
+    image_url:
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=1200&q=80",
+    description_es:
+      "La familia Gómez compró su casa en Lambaré con asesoramiento cercano y negociación clara; celebraron el cierre con total confianza.",
+    sort_order: 3,
+    is_active: true,
+  },
+  {
+    id: "fb-4",
+    image_url:
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1200&q=80",
+    description_es:
+      "Laura revalorizó su propiedad con una estrategia de venta profesional y recibió una oferta que superó sus expectativas.",
+    sort_order: 4,
+    is_active: true,
+  },
 ];
 
 export default function SuccessCasesSlider() {
@@ -36,10 +70,7 @@ export default function SuccessCasesSlider() {
   }, [cases.length, index]);
 
   useEffect(() => {
-    if (lang === "es") {
-      setTranslatedById({});
-      return;
-    }
+    if (lang === "es") { setTranslatedById({}); return; }
     const target = lang === "en" ? "en" : "pt";
     let cancelled = false;
     (async () => {
@@ -51,121 +82,73 @@ export default function SuccessCasesSlider() {
       }
       if (!cancelled) setTranslatedById(next);
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [cases, lang]);
 
   const prev = () => setIndex((i) => (i - 1 + cases.length) % cases.length);
   const next = () => setIndex((i) => (i + 1) % cases.length);
-  const getDesc = (row: SuccessCase) => {
-    if (lang === "es") return row.description_es;
-    return translatedById[row.id] ?? row.description_es;
-  };
+  const getDesc = (row: SuccessCase) => lang === "es" ? row.description_es : translatedById[row.id] ?? row.description_es;
 
   return (
-    <section className="py-24 md:py-32">
+    <section className="py-20 md:py-28 surface-warm">
       <div className="container">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/8 mb-5">
-              <Trophy className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-bold uppercase tracking-[0.15em] text-primary">
-                {t('success.case_label')}
-              </span>
-            </div>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-foreground leading-[1.08] tracking-tight">
-              {t('success.title')}
-            </h2>
-            <p className="text-muted-foreground mt-4 text-base md:text-lg leading-relaxed">
-              {t('success.subtitle')}
-            </p>
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+          <div>
+            <p className="section-label">{t('success.case_label')}</p>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground leading-tight">{t('success.title')}</h2>
+            <p className="text-muted-foreground mt-2 text-sm font-sans">{t('success.subtitle')}</p>
           </div>
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={prev}
-              className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center transition-all duration-200 hover:opacity-90 active:scale-95 shadow-md"
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={prev}
+              className="w-10 h-10 rounded-lg border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors"
               aria-label={t('success.prev')}
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
-            <button
-              type="button"
-              onClick={next}
-              className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center transition-all duration-200 hover:opacity-90 active:scale-95 shadow-md"
+            <button type="button" onClick={next}
+              className="w-10 h-10 rounded-lg bg-accent text-white flex items-center justify-center hover:opacity-90 transition-colors"
               aria-label={t('success.next')}
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Slider */}
-        <div className="relative overflow-hidden rounded-2xl border border-border/60 shadow-xl">
-          <div className="relative min-h-[320px] md:min-h-[360px]">
+        <div className="relative overflow-hidden rounded-xl border border-border bg-card">
+          <div className="relative min-h-[280px] md:min-h-[320px]">
             {cases.map((c, i) => {
               const active = i === index;
               return (
-                <div
-                  key={c.id}
-                  className={[
-                    "absolute inset-0 transition-all duration-500 ease-out",
-                    active ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12 pointer-events-none",
-                  ].join(" ")}
-                >
+                <div key={c.id} className={`absolute inset-0 transition-all duration-500 ${active ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8 pointer-events-none"}`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 h-full">
-                    {/* Image */}
-                    <div className="relative overflow-hidden">
+                    <div className="relative overflow-hidden bg-muted">
                       {c.image_url ? (
-                        <img
-                          src={c.image_url}
-                          alt={`${t('success.case_label')} ${i + 1}`}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
+                        <img src={c.image_url} alt={`${t('success.case_label')} ${i + 1}`} className="absolute inset-0 w-full h-full object-cover" />
                       ) : (
-                        <div className="absolute inset-0 bg-primary flex items-center justify-center">
-                          <div className="relative">
-                            <div className="absolute inset-0 w-32 h-32 rounded-full bg-white/5 blur-2xl" />
-                            <Award className="relative w-20 h-20 text-white/15" />
-                          </div>
+                        <div className="absolute inset-0 flex items-center justify-center bg-primary">
+                          <Award className="w-16 h-16 text-accent/20" />
                         </div>
                       )}
                     </div>
-
-                    {/* Content */}
-                    <div className="p-8 md:p-14 flex flex-col justify-center bg-card">
-                      <div className="flex items-center gap-3 mb-7">
-                        <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-primary text-white font-extrabold text-sm">
+                    <div className="p-8 md:p-12 flex flex-col justify-center">
+                      <div className="flex items-center gap-3 mb-6">
+                        <span className="w-10 h-10 rounded-lg bg-accent text-white flex items-center justify-center font-bold text-sm font-sans">
                           {String(i + 1).padStart(2, '0')}
                         </span>
                         <div className="h-px flex-1 bg-border" />
-                        <span className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">
-                          {t('success.case_label')}
-                        </span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">{t('success.case_label')}</span>
                       </div>
-                      <p className="text-lg md:text-xl text-foreground leading-relaxed whitespace-pre-line font-medium">
-                        {getDesc(c)}
-                      </p>
+                      <p className="text-base md:text-lg text-foreground leading-relaxed font-sans">{getDesc(c)}</p>
                     </div>
                   </div>
                 </div>
               );
             })}
           </div>
-
-          {/* Dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5 md:left-auto md:right-14 md:translate-x-0">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 md:left-auto md:right-12 md:translate-x-0">
             {cases.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setIndex(i)}
-                className={[
-                  "rounded-full transition-all duration-300",
-                  i === index ? "w-8 h-2.5 bg-primary shadow-md" : "w-2.5 h-2.5 bg-border hover:bg-muted-foreground/40",
-                ].join(" ")}
+              <button key={i} type="button" onClick={() => setIndex(i)}
+                className={`rounded-full transition-all duration-300 ${i === index ? "w-6 h-2 bg-accent" : "w-2 h-2 bg-border hover:bg-muted-foreground/30"}`}
                 aria-label={`${t('success.go_to_case')} ${i + 1}`}
               />
             ))}

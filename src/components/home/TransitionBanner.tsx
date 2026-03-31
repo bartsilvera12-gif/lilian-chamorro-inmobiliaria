@@ -20,44 +20,28 @@ export default function TransitionBanner() {
   }, []);
 
   const stats = [
-    {
-      icon: TrendingUp,
-      value: quotesCount > 0 ? `+${quotesCount}` : '0',
-      label: t('banner.quotes_done'),
-    },
-    {
-      icon: MapPin,
-      value: `${barriosCount}`,
-      label: t('banner.coverage_asuncion'),
-    },
-    {
-      icon: Shield,
-      value: t('banner.free'),
-      label: t('banner.instant_estimate'),
-    },
+    { icon: TrendingUp, value: quotesCount > 0 ? `+${quotesCount}` : '0', label: t('banner.quotes_done') },
+    { icon: MapPin, value: `${barriosCount}`, label: t('banner.coverage_asuncion') },
+    { icon: Shield, value: t('banner.free'), label: t('banner.instant_estimate') },
   ];
 
   return (
-    <section className="py-10">
+    <section className="py-16">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {stats.map((stat, i) => (
-            <div
-              key={i}
-              className={`animate-reveal ${i > 0 ? `animate-reveal-delay-${i}` : ''} group relative overflow-hidden rounded-2xl bg-primary p-7 flex items-center gap-5 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300`}
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.04] rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-                <stat.icon className="w-6 h-6 text-white" />
+        <div className="bg-primary rounded-xl p-8 md:p-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4">
+            {stats.map((stat, i) => (
+              <div key={i} className={`animate-reveal ${i > 0 ? `animate-reveal-delay-${i}` : ''} flex items-center gap-4 ${i > 0 ? 'md:border-l md:border-primary-foreground/10 md:pl-8' : ''}`}>
+                <div className="w-11 h-11 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                  <stat.icon className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-2xl font-serif font-bold text-primary-foreground">{stat.value}</p>
+                  <p className="text-xs text-primary-foreground/50 font-sans mt-0.5">{stat.label}</p>
+                </div>
               </div>
-              <div className="relative">
-                <p className="text-2xl md:text-3xl font-extrabold text-white leading-none tracking-tight">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-white/60 mt-1.5 font-medium">{stat.label}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

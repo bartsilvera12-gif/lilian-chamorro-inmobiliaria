@@ -3,16 +3,14 @@ import Layout from "@/components/layout/Layout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { fetchTestimonials, type Testimonial } from "@/lib/osorioRepository";
 import { translateFromEs } from "@/lib/autoTranslate";
-import { Quote, Star } from "lucide-react";
+import { Star, UserCircle } from "lucide-react";
 
 export default function TestimonialsPage() {
   const { t, lang } = useLanguage();
   const [items, setItems] = useState<Testimonial[]>([]);
   const [translatedById, setTranslatedById] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }, []);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "auto" }); }, []);
 
   useEffect(() => {
     let active = true;
@@ -21,16 +19,11 @@ export default function TestimonialsPage() {
       if (!active) return;
       setItems(rows);
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    if (lang === "es") {
-      setTranslatedById({});
-      return;
-    }
+    if (lang === "es") { setTranslatedById({}); return; }
     const target = lang === "en" ? "en" : "pt";
     let cancelled = false;
     (async () => {
@@ -42,9 +35,7 @@ export default function TestimonialsPage() {
       }
       if (!cancelled) setTranslatedById(next);
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [items, lang]);
 
   const getReview = (item: Testimonial) =>
@@ -52,45 +43,48 @@ export default function TestimonialsPage() {
 
   return (
     <Layout>
-      <section className="py-24 md:py-32">
-        <div className="container">
-          <div className="text-center mb-14 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/8 mb-5">
-              <Quote className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-bold uppercase tracking-[0.15em] text-primary">
-                {t("testimonials.badge")}
-              </span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-foreground leading-[1.08] tracking-tight">
-              {t("testimonials.title")}
-            </h1>
-            <p className="text-muted-foreground mt-4 text-base md:text-lg leading-relaxed">
-              {t("testimonials.subtitle")}
-            </p>
-          </div>
+      <section className="bg-primary py-16 md:py-20">
+        <div className="container text-center">
+          <p className="text-xs font-sans font-semibold uppercase tracking-[0.15em] text-accent mb-3">{t("testimonials.badge")}</p>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary-foreground">{t("testimonials.title")}</h1>
+          <p className="text-primary-foreground/40 text-sm font-sans mt-2">{t("testimonials.subtitle")}</p>
+        </div>
+      </section>
 
+      <section className="py-10 md:py-14">
+        <div className="container">
           {items.length === 0 ? (
-            <p className="text-center text-muted-foreground">No hay reseñas cargadas.</p>
+            <p className="text-center text-muted-foreground font-sans py-12">No hay reseñas cargadas.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {items.map((item, i) => (
                 <article
                   key={item.id}
-                  className={`animate-reveal ${i > 0 ? `animate-reveal-delay-${Math.min(i, 4)}` : ""} rounded-2xl overflow-hidden bg-card border border-border card-hover`}
+                  className={`animate-reveal ${i > 0 ? `animate-reveal-delay-${Math.min(i, 4)}` : ""} rounded-xl overflow-hidden bg-card border border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col`}
                 >
-                  <div className="p-6 md:p-7">
-                    <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center mb-4">
-                      <Quote className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex gap-1 mb-4">
+                  <div className="h-[3px] bg-accent" />
+                  <div className="p-7 flex flex-col flex-1">
+                    <div className="flex gap-1 mb-5">
                       {[...Array(5)].map((_, s) => (
-                        <Star
-                          key={s}
-                          className={`w-4 h-4 ${s < item.stars ? "fill-amber text-amber" : "text-muted-foreground/35"}`}
-                        />
+                        <Star key={s} className={`w-[18px] h-[18px] ${s < item.stars ? "fill-accent text-accent" : "text-border"}`} />
                       ))}
                     </div>
-                    <p className="text-sm text-foreground/85 leading-relaxed whitespace-pre-line">{getReview(item)}</p>
+                    <div className="flex-1 mb-6">
+                      <p className="text-sm text-foreground/70 leading-[1.85] font-sans">
+                        <span className="inline-block mr-1 align-text-top text-accent/30">"</span>
+                        {getReview(item)}
+                        <span className="inline-block ml-0.5 align-text-top text-accent/30">"</span>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 pt-5 mt-auto border-t border-border">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                        <UserCircle className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold font-sans text-foreground">Cliente Verificado</p>
+                        <p className="text-[11px] font-sans text-muted-foreground">Lilian Chamorro Bienes Raíces</p>
+                      </div>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -101,4 +95,3 @@ export default function TestimonialsPage() {
     </Layout>
   );
 }
-

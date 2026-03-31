@@ -1,12 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 99%;
     --foreground: 220 20% 14%;
 
     --card: 0 0% 100%;
@@ -15,68 +13,70 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 14%;
 
-    --primary: 240 68% 30%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 216 69% 14%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 20%;
+    --secondary: 42 65% 48%;
+    --secondary-foreground: 220 35% 10%;
 
-    --muted: 220 14% 96%;
+    --muted: 220 10% 95%;
     --muted-foreground: 220 10% 46%;
 
-    --accent: 240 68% 38%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 42 65% 48%;
+    --accent-foreground: 220 35% 10%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 65% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 240 68% 30%;
+    --border: 220 10% 91%;
+    --input: 220 10% 91%;
+    --ring: 42 65% 48%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 220 14% 97%;
-    --sidebar-foreground: 220 20% 20%;
-    --sidebar-primary: 240 68% 30%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 220 20% 20%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 240 68% 30%;
+    --sidebar-background: 220 35% 12%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 42 65% 48%;
+    --sidebar-primary-foreground: 220 35% 10%;
+    --sidebar-accent: 220 25% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 25% 18%;
+    --sidebar-ring: 42 65% 48%;
 
-    /* Custom tokens */
-    --hero-overlay: 220 20% 14%;
-    --surface-warm: 220 14% 97%;
+    --gold: 42 65% 48%;
+    --gold-light: 42 50% 94%;
+    --gold-dark: 42 65% 36%;
+    --navy: 220 35% 15%;
+    --navy-light: 220 15% 96%;
+    --navy-dark: 220 40% 8%;
+    --surface-warm: 40 15% 97%;
     --surface-elevated: 0 0% 100%;
-    --navy: 240 68% 30%;
-    --navy-light: 240 68% 96%;
-    --amber: 38 92% 50%;
-    --amber-light: 38 92% 95%;
-    --success: 152 45% 40%;
-    --success-light: 152 45% 94%;
+    --success: 152 40% 42%;
+    --success-light: 152 40% 95%;
+    --amber: 42 65% 48%;
+    --amber-light: 42 50% 94%;
   }
 
   .dark {
-    --background: 220 20% 7%;
-    --foreground: 220 14% 93%;
-    --card: 220 18% 11%;
-    --card-foreground: 220 14% 93%;
-    --popover: 220 18% 11%;
-    --popover-foreground: 220 14% 93%;
-    --primary: 240 68% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 12% 16%;
-    --secondary-foreground: 220 14% 90%;
-    --muted: 220 12% 16%;
+    --background: 220 35% 6%;
+    --foreground: 220 10% 92%;
+    --card: 220 30% 10%;
+    --card-foreground: 220 10% 92%;
+    --popover: 220 30% 10%;
+    --popover-foreground: 220 10% 92%;
+    --primary: 42 65% 48%;
+    --primary-foreground: 220 35% 8%;
+    --secondary: 220 25% 18%;
+    --secondary-foreground: 220 10% 90%;
+    --muted: 220 25% 15%;
     --muted-foreground: 220 10% 55%;
-    --accent: 240 68% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 40%;
+    --accent: 42 65% 52%;
+    --accent-foreground: 220 35% 8%;
+    --destructive: 0 55% 42%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 12% 18%;
-    --input: 220 12% 18%;
-    --ring: 240 68% 45%;
+    --border: 220 25% 16%;
+    --input: 220 25% 16%;
+    --ring: 42 65% 48%;
   }
 }
 
@@ -86,11 +86,13 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans font-bold;
+    font-family: 'Playfair Display', Georgia, serif;
+    @apply font-bold;
     text-wrap: balance;
   }
 
@@ -101,30 +103,36 @@
 }
 
 @layer utilities {
-  .text-gradient-primary {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .font-sans {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .bg-gradient-gold {
+    background: linear-gradient(135deg, hsl(42 65% 50%), hsl(42 65% 40%));
+  }
+
+  .bg-gradient-navy {
+    background: hsl(var(--navy));
   }
 
   .surface-warm {
     background-color: hsl(var(--surface-warm));
   }
 
-  .surface-elevated {
-    background-color: hsl(var(--surface-elevated));
-    box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.04), 0 1px 2px -1px hsl(var(--foreground) / 0.04);
+  .shadow-premium {
+    box-shadow: 0 1px 3px 0 hsl(220 20% 14% / 0.04), 0 4px 16px -2px hsl(220 20% 14% / 0.06);
   }
 
-  .card-hover {
-    @apply transition-shadow duration-300 ease-out;
-  }
-
-  .card-hover:hover {
-    box-shadow: 0 8px 25px -5px hsl(var(--foreground) / 0.08), 0 4px 10px -6px hsl(var(--foreground) / 0.04);
+  .shadow-gold {
+    box-shadow: 0 2px 12px -3px hsl(42 65% 48% / 0.3);
   }
 
   .badge-status {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-semibold tracking-wide font-sans uppercase;
   }
 
   .badge-disponible {
@@ -135,36 +143,71 @@
 
   .badge-alquilado {
     @apply badge-status;
-    background-color: hsl(var(--amber-light));
-    color: hsl(var(--amber));
+    background-color: hsl(var(--gold-light));
+    color: hsl(var(--gold-dark));
   }
 
   .badge-vendido {
     @apply badge-status;
-    background-color: hsl(var(--destructive) / 0.12);
+    background-color: hsl(var(--destructive) / 0.1);
     color: hsl(var(--destructive));
+  }
+
+  .gold-divider {
+    @apply h-px;
+    background: linear-gradient(to right, transparent, hsl(var(--gold) / 0.25), transparent);
+  }
+
+  .input-premium {
+    @apply w-full h-11 rounded-lg border border-border bg-background px-4 text-sm font-sans text-foreground;
+    @apply placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-ring;
+    @apply transition-all duration-200;
+  }
+
+  .btn-gold {
+    @apply h-11 px-6 rounded-lg bg-gradient-gold text-primary-foreground font-semibold text-sm font-sans;
+    @apply inline-flex items-center justify-center gap-2;
+    @apply hover:opacity-90 active:scale-[0.98] transition-all duration-200;
+  }
+
+  .btn-outline {
+    @apply h-11 px-6 rounded-lg border border-border text-foreground font-medium text-sm font-sans;
+    @apply inline-flex items-center justify-center gap-2;
+    @apply hover:bg-muted active:scale-[0.98] transition-all duration-200;
+  }
+
+  .btn-navy {
+    @apply h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm font-sans;
+    @apply inline-flex items-center justify-center gap-2;
+    @apply hover:opacity-90 active:scale-[0.98] transition-all duration-200;
+  }
+
+  .section-label {
+    @apply text-xs font-sans font-semibold uppercase tracking-[0.15em] text-accent mb-3 inline-block;
   }
 }
 
-/* Scroll reveal animation */
+/* Animations */
 @keyframes reveal-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-    filter: blur(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-reveal {
-  animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: reveal-up 0.6s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
 .animate-reveal-delay-1 { animation-delay: 80ms; }
 .animate-reveal-delay-2 { animation-delay: 160ms; }
 .animate-reveal-delay-3 { animation-delay: 240ms; }
 .animate-reveal-delay-4 { animation-delay: 320ms; }
+
+/* Leaflet */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px -4px hsla(220, 20%, 14%, 0.15) !important;
+}
+
+.leaflet-popup-tip {
+  box-shadow: none !important;
+}

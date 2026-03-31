@@ -339,7 +339,7 @@ export async function fetchTopQuotedProperties(limit: number) {
         .select(PROPERTIES_SELECT_LEGACY)
         .order("quote_count", { ascending: false })
         .limit(limit);
-      data = second.data;
+      data = second.data as any;
       error = second.error;
     }
     if (error) {
@@ -410,7 +410,7 @@ export async function fetchPropertyById(id: string) {
         .select(PROPERTIES_SELECT_LEGACY)
         .eq("id", id)
         .single();
-      data = second.data;
+      data = second.data as any;
       error = second.error;
     }
 

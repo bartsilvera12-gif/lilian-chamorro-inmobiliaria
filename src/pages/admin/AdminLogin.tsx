@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,18 +7,25 @@ import { Lock, Loader2, AlertCircle } from 'lucide-react';
 
 export default function AdminLogin() {
   const { t } = useLanguage();
-  const { signIn, profile, loading: authLoading } = useAuth();
+  const { signIn, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // If already logged in and profile loaded with admin role, redirect
-  if (!authLoading && profile?.role === 'admin') {
-    navigate('/admin/dashboard', { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (profile?.role === 'admin') {
+      navigate('/admin/dashboard', { replace: true });
+      return;
+    }
+
+    if (user && profile?.role !== 'admin') {
+      setError('Tu usuario inició sesión, pero no tiene rol admin en profiles.');
+    }
+  }, [authLoading, navigate, profile, user]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +38,8 @@ export default function AdminLogin() {
       setError(loginError);
       setLoading(false);
     } else {
-      // Auth state change will trigger profile fetch, then redirect
-      setTimeout(() => {
-        navigate('/admin/dashboard', { replace: true });
-      }, 500);
+      // Auth state change disparará carga de perfil y redirección si corresponde.
+      setLoading(false);
     }
   };
 

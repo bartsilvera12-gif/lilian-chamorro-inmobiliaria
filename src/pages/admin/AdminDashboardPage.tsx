@@ -31,11 +31,6 @@ interface RecentQuote {
   property_id: string;
 }
 
-interface PropertyMinimal {
-  id: string;
-  title: string;
-}
-
 export default function AdminDashboardPage() {
   const { profile } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({ totalProperties: 0, available: 0, rented: 0, totalQuotes: 0 });
@@ -116,14 +111,14 @@ export default function AdminDashboardPage() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-32">
-          <Loader2 className="w-7 h-7 animate-spin text-primary" />
+          <Loader2 className="w-7 h-7 animate-spin text-accent" />
         </div>
       </AdminLayout>
     );
   }
 
   const metricCards = [
-    { label: 'Total Propiedades', value: stats.totalProperties, icon: Building2, color: 'text-primary bg-primary/10' },
+    { label: 'Total Propiedades', value: stats.totalProperties, icon: Building2, color: 'text-accent-foreground bg-accent/15' },
     { label: 'Disponibles', value: stats.available, icon: CheckCircle, color: 'text-[hsl(var(--success))] bg-[hsl(var(--success-light))]' },
     { label: 'Alquiladas', value: stats.rented, icon: XCircle, color: 'text-[hsl(var(--amber))] bg-[hsl(var(--amber-light))]' },
     { label: 'Cotizaciones', value: stats.totalQuotes, icon: MessageSquare, color: 'text-accent bg-accent/10' },
@@ -151,7 +146,7 @@ export default function AdminDashboardPage() {
           {/* Top Properties */}
           <div className="bg-card border border-border rounded-xl">
             <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
-              <TrendingUp className="w-4 h-4 text-primary" />
+              <TrendingUp className="w-4 h-4 text-accent-foreground" />
               <h2 className="text-sm font-semibold text-foreground">Top Propiedades por Cotizaciones</h2>
             </div>
             <div className="divide-y divide-border">
@@ -168,7 +163,7 @@ export default function AdminDashboardPage() {
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.status === 'disponible' ? 'badge-disponible' : p.status === 'vendido' ? 'badge-vendido' : 'badge-alquilado'}`}>
                       {p.status}
                     </span>
-                    <div className="flex items-center gap-1 text-xs font-semibold text-primary">
+                    <div className="flex items-center gap-1 text-xs font-semibold text-accent-foreground">
                       <MessageSquare className="w-3 h-3" />
                       {p.quote_count ?? 0}
                     </div>
@@ -181,7 +176,7 @@ export default function AdminDashboardPage() {
           {/* Recent Quotes */}
           <div className="bg-card border border-border rounded-xl">
             <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
-              <MessageSquare className="w-4 h-4 text-primary" />
+              <MessageSquare className="w-4 h-4 text-accent-foreground" />
               <h2 className="text-sm font-semibold text-foreground">Últimas Cotizaciones</h2>
             </div>
             <div className="divide-y divide-border">
@@ -201,7 +196,7 @@ export default function AdminDashboardPage() {
                       {q.telefono && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{q.telefono}</span>}
                     </div>
                     {q.property_id && (
-                      <p className="text-xs text-primary font-medium">{propMap[q.property_id] ?? 'Propiedad'}</p>
+                      <p className="text-xs text-accent-foreground font-medium">{propMap[q.property_id] ?? 'Propiedad'}</p>
                     )}
                     {q.mensaje && <p className="text-xs text-muted-foreground line-clamp-1">{q.mensaje}</p>}
                     <p className="text-xs text-muted-foreground/60">

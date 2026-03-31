@@ -1,22 +1,25 @@
 /**
- * Crea (o actualiza) usuario en Auth + fila admin en osorio_inmueble.profiles.
+ * Crea (o actualiza) usuario en Auth + fila admin en lilian_inmobiliaria.profiles.
  *
  * Requisitos en .env.local (o variables de entorno):
  *   VITE_SUPABASE_URL o SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY  (Dashboard → Settings → API → service_role; NO subir a git)
  *
  * Opcional:
- *   VITE_BUSINESS_SCHEMA=osorio_inmueble  (default: osorio_inmueble)
+ *   VITE_BUSINESS_SCHEMA=lilian_inmobiliaria  (default: lilian_inmobiliaria)
  *
  * Credenciales del admin (mejor pasarlas solo en la línea de comando):
- *   OSORIO_ADMIN_EMAIL
- *   OSORIO_ADMIN_PASSWORD
- *   OSORIO_ADMIN_FULL_NAME  (opcional)
- *   OSORIO_STORE_ID         (opcional, si profiles.store_id es NOT NULL)
+ *   LILIAN_ADMIN_EMAIL
+ *   LILIAN_ADMIN_PASSWORD
+ *   LILIAN_ADMIN_FULL_NAME  (opcional)
+ *   LILIAN_STORE_ID         (opcional, si profiles.store_id es NOT NULL)
+ *
+ * Compatibilidad legacy (también soportado):
+ *   OSORIO_ADMIN_EMAIL / OSORIO_ADMIN_PASSWORD / OSORIO_ADMIN_FULL_NAME / OSORIO_STORE_ID
  *
  * Ejemplo (PowerShell):
- *   $env:OSORIO_ADMIN_EMAIL="inmuebles.jo@gmail.com"
- *   $env:OSORIO_ADMIN_PASSWORD="TuContraseñaSegura"
+ *   $env:LILIAN_ADMIN_EMAIL="admin@dominio.com"
+ *   $env:LILIAN_ADMIN_PASSWORD="TuContraseñaSegura"
  *   node scripts/create-osorio-admin.mjs
  */
 
@@ -60,13 +63,22 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const schema =
   process.env.VITE_BUSINESS_SCHEMA ||
   process.env.NEXT_PUBLIC_BUSINESS_SCHEMA ||
-  'osorio_inmueble';
+  'lilian_inmobiliaria';
 
-const email = process.env.OSORIO_ADMIN_EMAIL?.trim();
-const password = process.env.OSORIO_ADMIN_PASSWORD;
+const email =
+  process.env.LILIAN_ADMIN_EMAIL?.trim() ||
+  process.env.OSORIO_ADMIN_EMAIL?.trim();
+const password =
+  process.env.LILIAN_ADMIN_PASSWORD ||
+  process.env.OSORIO_ADMIN_PASSWORD;
 const fullName =
-  process.env.OSORIO_ADMIN_FULL_NAME?.trim() || 'Administrador OSORIO';
-const storeId = process.env.OSORIO_STORE_ID?.trim() || null;
+  process.env.LILIAN_ADMIN_FULL_NAME?.trim() ||
+  process.env.OSORIO_ADMIN_FULL_NAME?.trim() ||
+  'Administrador LILIAN';
+const storeId =
+  process.env.LILIAN_STORE_ID?.trim() ||
+  process.env.OSORIO_STORE_ID?.trim() ||
+  null;
 
 if (!url || !serviceKey) {
   console.error(
@@ -77,7 +89,7 @@ if (!url || !serviceKey) {
 
 if (!email || !password) {
   console.error(
-    'Definí OSORIO_ADMIN_EMAIL y OSORIO_ADMIN_PASSWORD (variables de entorno).',
+    'Definí LILIAN_ADMIN_EMAIL y LILIAN_ADMIN_PASSWORD (variables de entorno).',
   );
   process.exit(1);
 }
