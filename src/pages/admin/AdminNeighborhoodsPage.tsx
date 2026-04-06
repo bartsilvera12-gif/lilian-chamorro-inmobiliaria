@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { osorio } from '@/lib/supabase';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { MapPin, Plus, Pencil, Trash2, Loader2, Check, Search } from 'lucide-react';
+import { MapPin, Plus, Pencil, Trash2, Loader2, Check, Search, MapPinned } from 'lucide-react';
+import StyledSelect from '@/components/ui/StyledSelect';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -15,6 +16,12 @@ interface BarrioRow {
   coeficiente: number;
   precio_m2_min: number;
   precio_m2_max: number;
+  ciudad_id?: string | null;
+}
+
+interface CiudadOpt {
+  id: string;
+  nombre: string;
 }
 
 /** Valores por defecto en BD para campos de calculadora (no editables en admin). */
@@ -33,16 +40,24 @@ export default function AdminNeighborhoodsPage() {
   /** Fila original al editar (para no sobrescribir coeficientes/precios ocultos). */
   const [editingRow, setEditingRow] = useState<BarrioRow | null>(null);
   const [nombre, setNombre] = useState('');
+  const [ciudadId, setCiudadId] = useState('');
+  const [ciudades, setCiudades] = useState<CiudadOpt[]>([]);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
-    const { data } = await osorio
-      .from('barrios')
-      .select('id, nombre, coeficiente, precio_m2_min, precio_m2_max')
-      .order('nombre');
-    setItems((data ?? []) as any);
+    const [bRes, cRes] = await Promise.all([
+      osorio.from('barrios').select('id, nombre, coeficiente, precio_m2_min, precio_m2_max, ciudad_id').order('nombre'),
+      osorio.from('ciudades').select('id, nombre').order('nombre'),
+    ]);
+    if (bRes.error && String(bRes.error.message || '').toLowerCase().includes('ciudad_id')) {
+      const { data } = await osorio.from('barrios').select('id, nombre, coeficiente, precio_m2_min, precio_m2_max').order('nombre');
+      setItems((data ?? []) as BarrioRow[]);
+    } else {
+      setItems((bRes.data ?? []) as BarrioRow[]);
+    }
+    setCiudades(!cRes.error ? ((cRes.data ?? []) as CiudadOpt[]) : []);
     setLoading(false);
   };
 
@@ -50,6 +65,7 @@ export default function AdminNeighborhoodsPage() {
 
   const openCreate = () => {
     setNombre('');
+    setCiudadId(ciudades[0]?.id ?? '');
     setEditingId(null);
     setEditingRow(null);
     setShowForm(true);
@@ -57,6 +73,7 @@ export default function AdminNeighborhoodsPage() {
 
   const openEdit = (n: BarrioRow) => {
     setNombre(n.nombre);
+    setCiudadId(n.ciudad_id ?? ciudades[0]?.id ?? '');
     setEditingId(n.id);
     setEditingRow(n);
     setShowForm(true);
@@ -74,9 +91,13 @@ export default function AdminNeighborhoodsPage() {
       toast.error('El nombre es obligatorio');
       return;
     }
+    if (ciudades.length > 0 && !ciudadId) {
+      toast.error('Seleccioná una ciudad');
+      return;
+    }
 
     setSaving(true);
-    let payload: Record<string, string | number>;
+    let payload: Record<string, string | number | null>;
 
     if (editingId && editingRow) {
       payload = {
@@ -84,6 +105,7 @@ export default function AdminNeighborhoodsPage() {
         coeficiente: editingRow.coeficiente,
         precio_m2_min: editingRow.precio_m2_min,
         precio_m2_max: editingRow.precio_m2_max,
+        ciudad_id: ciudadId || null,
       };
     } else {
       payload = {
@@ -91,6 +113,7 @@ export default function AdminNeighborhoodsPage() {
         coeficiente: DEFAULT_CALC.coeficiente,
         precio_m2_min: DEFAULT_CALC.precio_m2_min,
         precio_m2_max: DEFAULT_CALC.precio_m2_max,
+        ciudad_id: ciudadId || null,
       };
     }
 
@@ -134,6 +157,17 @@ export default function AdminNeighborhoodsPage() {
         {showForm && (
           <div className="bg-card border border-border rounded-xl p-5 space-y-4 max-w-md">
             <h2 className="text-sm font-semibold text-foreground">{editingId ? 'Editar Barrio' : 'Nuevo Barrio'}</h2>
+            {ciudades.length > 0 && (
+              <div>
+                <label className={labelCls}>Ciudad *</label>
+                <StyledSelect icon={MapPinned} value={ciudadId} onChange={(e) => setCiudadId(e.target.value)} className="w-full">
+                  <option value="">Seleccionar ciudad</option>
+                  {ciudades.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </StyledSelect>
+              </div>
+            )}
             <div>
               <label className={labelCls}>Nombre *</label>
               <input
@@ -168,6 +202,9 @@ export default function AdminNeighborhoodsPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nombre</th>
+                    {ciudades.length > 0 && (
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Ciudad</th>
+                    )}
                     <th className="text-right px-4 py-3 font-medium text-muted-foreground">Acciones</th>
                   </tr>
                 </thead>
@@ -175,6 +212,11 @@ export default function AdminNeighborhoodsPage() {
                   {filtered.map(n => (
                     <tr key={n.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 font-medium text-foreground">{n.nombre}</td>
+                      {ciudades.length > 0 && (
+                        <td className="px-4 py-3 text-muted-foreground text-sm">
+                          {ciudades.find((c) => c.id === n.ciudad_id)?.nombre ?? '—'}
+                        </td>
+                      )}
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => openEdit(n)} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>

@@ -1,6 +1,6 @@
 import { osorio } from "@/lib/supabase";
 import { parseLatLngFromGoogleMapsUrl, resolveShortGoogleMapsUrls } from "@/lib/googleMapsUrl";
-import type { Property } from "@/types/property";
+import type { PaymentPlanEntry, Property } from "@/types/property";
 import { isPriceCurrency, type PriceCurrency } from "@/lib/currency";
 import { MOCK_PROPERTIES, MOCK_NEIGHBORHOODS, TIPOS } from "@/data/mockData";
 
@@ -14,8 +14,11 @@ function logDbError(context: string, error: any) {
 }
 
 /** Columnas de `properties` para lectura pública/admin (exportadas para el listado admin). */
-export const PROPERTIES_SELECT_FULL =
+export const PROPERTIES_SELECT_WITHOUT_PLANO =
   "id,title,description,price,price_currency,operation_type,status,available_from,available_to,bedrooms,bathrooms,area_m2,barrio_id,property_type_id,location_url,quote_count,created_at";
+
+export const PROPERTIES_SELECT_FULL =
+  `${PROPERTIES_SELECT_WITHOUT_PLANO},plano_url,payment_plans`;
 
 export const PROPERTIES_SELECT_LEGACY =
   "id,title,description,price,operation_type,status,available_from,available_to,bedrooms,bathrooms,area_m2,barrio_id,property_type_id,location_url,quote_count,created_at";
@@ -119,6 +122,24 @@ function toNumber(v: unknown): number {
   return 0;
 }
 
+export function parsePaymentPlans(raw: unknown): PaymentPlanEntry[] {
+  if (raw == null || !Array.isArray(raw)) return [];
+  const out: PaymentPlanEntry[] = [];
+  for (const x of raw) {
+    if (x && typeof x === "object" && "cuotas" in x) {
+      const cuotas = Number((x as { cuotas: unknown }).cuotas);
+      const label = (x as { label?: unknown }).label;
+      if (Number.isFinite(cuotas) && cuotas > 0) {
+        out.push({
+          cuotas,
+          label: typeof label === "string" && label.trim() ? label.trim() : undefined,
+        });
+      }
+    }
+  }
+  return out;
+}
+
 export { parseLatLngFromGoogleMapsUrl } from "@/lib/googleMapsUrl";
 
 async function fetchBarriosMap(ids: string[]) {
@@ -137,6 +158,62 @@ async function fetchBarriosMap(ids: string[]) {
   } catch (e) {
     logDbError("fetchBarriosMap", e);
     return new Map<string, string>();
+  }
+}
+
+export type BarrioDetail = { nombre: string; ciudad: string };
+
+/** Barrio + nombre de ciudad (requiere columnas `ciudades` y `barrios.ciudad_id`). */
+async function fetchBarriosDetailMap(ids: string[]): Promise<Map<string, BarrioDetail>> {
+  const empty = new Map<string, BarrioDetail>();
+  if (ids.length === 0) return empty;
+  try {
+    for (const chunk of chunkArray(ids, IN_CLAUSE_CHUNK)) {
+      let { data, error } = await osorio.from("barrios").select("id, nombre, ciudad_id").in("id", chunk);
+      if (error && looksLikeMissingColumnError(error, "ciudad_id")) {
+        const basic = await fetchBarriosMap(chunk);
+        for (const id of chunk) {
+          const n = basic.get(id);
+          if (n) empty.set(id, { nombre: n, ciudad: "" });
+        }
+        continue;
+      }
+      if (error) {
+        logDbError("fetchBarriosDetailMap", error);
+        const basic = await fetchBarriosMap(chunk);
+        for (const id of chunk) {
+          const n = basic.get(id);
+          if (n) empty.set(id, { nombre: n, ciudad: "" });
+        }
+        continue;
+      }
+      const ciudadIds = Array.from(
+        new Set((data ?? []).map((b: { ciudad_id?: string | null }) => b.ciudad_id).filter(Boolean) as string[])
+      );
+      const ciudadNombre = new Map<string, string>();
+      if (ciudadIds.length > 0) {
+        const { data: cdata, error: cErr } = await osorio.from("ciudades").select("id, nombre").in("id", ciudadIds);
+        if (!cErr) {
+          for (const c of cdata ?? []) ciudadNombre.set(c.id as string, c.nombre as string);
+        }
+      }
+      for (const b of data ?? []) {
+        const cid = b.ciudad_id as string | null | undefined;
+        empty.set(b.id as string, {
+          nombre: b.nombre as string,
+          ciudad: cid ? ciudadNombre.get(cid) ?? "" : "",
+        });
+      }
+    }
+    return empty;
+  } catch (e) {
+    logDbError("fetchBarriosDetailMap", e);
+    const basic = await fetchBarriosMap(ids);
+    for (const id of ids) {
+      const n = basic.get(id);
+      if (n) empty.set(id, { nombre: n, ciudad: "" });
+    }
+    return empty;
   }
 }
 
@@ -212,6 +289,7 @@ function mapToPropertyViewModel(args: {
   price: unknown;
   price_currency?: unknown;
   barrio: string | undefined;
+  ciudad?: string | undefined;
   tipo: string | undefined;
   status: string;
   operation_type: string;
@@ -226,12 +304,17 @@ function mapToPropertyViewModel(args: {
   main_image: string | undefined;
   quote_count: unknown;
   created_at?: string | null;
+  plano_url?: string | null;
+  payment_plans?: unknown;
 }): Property {
   const coordSource = args.location_url_for_coords ?? args.location_url;
   const latLng = coordSource ? parseLatLngFromGoogleMapsUrl(coordSource) : null;
   const price_currency: PriceCurrency = isPriceCurrency(args.price_currency)
     ? args.price_currency
     : "PYG";
+
+  const plano = args.plano_url?.trim();
+  const plans = parsePaymentPlans(args.payment_plans);
 
   return {
     id: args.id,
@@ -240,6 +323,7 @@ function mapToPropertyViewModel(args: {
     price: toNumber(args.price),
     price_currency,
     barrio: args.barrio ?? "",
+    ciudad: args.ciudad?.trim() || undefined,
     tipo: args.tipo ?? "",
     estado: args.status,
     operacion: args.operation_type,
@@ -254,16 +338,17 @@ function mapToPropertyViewModel(args: {
     bedrooms: args.bedrooms ?? undefined,
     bathrooms: args.bathrooms ?? undefined,
     area_m2: args.area_m2 ? toNumber(args.area_m2) : undefined,
+    plano_url: plano || undefined,
+    payment_plans: plans.length > 0 ? plans : undefined,
   };
 }
 
 export async function fetchPublicProperties() {
   try {
-    let { data, error } = await fetchAllPropertiesRows(
-      PROPERTIES_SELECT_FULL,
-      "id",
-      true
-    );
+    let { data, error } = await fetchAllPropertiesRows(PROPERTIES_SELECT_FULL, "id", true);
+    if (error && looksLikeMissingColumnError(error, "plano_url")) {
+      ({ data, error } = await fetchAllPropertiesRows(PROPERTIES_SELECT_WITHOUT_PLANO, "id", true));
+    }
     if (error && looksLikeMissingColumnError(error, "price_currency")) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -288,8 +373,8 @@ export async function fetchPublicProperties() {
     const typeIds = Array.from(new Set(props.map((p) => p.property_type_id as string).filter(Boolean)));
     const propertyIds = props.map((p) => p.id as string);
 
-    const [barrioMap, typeMap, imagesMap, shortMapsResolved] = await Promise.all([
-      fetchBarriosMap(barrioIds),
+    const [barrioDetailMap, typeMap, imagesMap, shortMapsResolved] = await Promise.all([
+      fetchBarriosDetailMap(barrioIds),
       fetchPropertyTypesMap(typeIds),
       fetchMainImagesMap(propertyIds),
       resolveShortGoogleMapsUrls(props.map((p) => p.location_url as string | null)),
@@ -298,13 +383,15 @@ export async function fetchPublicProperties() {
     return props.map((p) => {
       const loc = p.location_url as string | null;
       const forCoords = loc ? shortMapsResolved.get(loc) ?? loc : null;
+      const bd = barrioDetailMap.get(p.barrio_id as string);
       return mapToPropertyViewModel({
         id: p.id as string,
         title: p.title as string,
         description: p.description as string | null,
         price: p.price,
         price_currency: (p as { price_currency?: unknown }).price_currency,
-        barrio: barrioMap.get(p.barrio_id as string),
+        barrio: bd?.nombre,
+        ciudad: bd?.ciudad,
         tipo: typeMap.get(p.property_type_id as string),
         status: p.status as string,
         operation_type: p.operation_type as string,
@@ -318,6 +405,8 @@ export async function fetchPublicProperties() {
         main_image: imagesMap.get(p.id as string),
         quote_count: p.quote_count,
         created_at: p.created_at as string | null | undefined,
+        plano_url: (p as { plano_url?: string | null }).plano_url,
+        payment_plans: (p as { payment_plans?: unknown }).payment_plans,
       });
     });
   } catch (e) {
@@ -333,6 +422,15 @@ export async function fetchTopQuotedProperties(limit: number) {
       .select(PROPERTIES_SELECT_FULL)
       .order("quote_count", { ascending: false })
       .limit(limit);
+    if (error && looksLikeMissingColumnError(error, "plano_url")) {
+      const r = await osorio
+        .from("properties")
+        .select(PROPERTIES_SELECT_WITHOUT_PLANO)
+        .order("quote_count", { ascending: false })
+        .limit(limit);
+      data = r.data as any;
+      error = r.error;
+    }
     if (error && looksLikeMissingColumnError(error, "price_currency")) {
       const second = await osorio
         .from("properties")
@@ -356,8 +454,8 @@ export async function fetchTopQuotedProperties(limit: number) {
     const typeIds = Array.from(new Set(props.map((p) => p.property_type_id as string).filter(Boolean)));
     const propertyIds = props.map((p) => p.id as string);
 
-    const [barrioMap, typeMap, imagesMap, shortMapsResolved] = await Promise.all([
-      fetchBarriosMap(barrioIds),
+    const [barrioDetailMap, typeMap, imagesMap, shortMapsResolved] = await Promise.all([
+      fetchBarriosDetailMap(barrioIds),
       fetchPropertyTypesMap(typeIds),
       fetchMainImagesMap(propertyIds),
       resolveShortGoogleMapsUrls(props.map((p) => p.location_url as string | null)),
@@ -366,13 +464,15 @@ export async function fetchTopQuotedProperties(limit: number) {
     return props.map((p) => {
       const loc = p.location_url as string | null;
       const forCoords = loc ? shortMapsResolved.get(loc) ?? loc : null;
+      const bd = barrioDetailMap.get(p.barrio_id as string);
       return mapToPropertyViewModel({
         id: p.id as string,
         title: p.title as string,
         description: p.description as string | null,
         price: p.price,
         price_currency: (p as { price_currency?: unknown }).price_currency,
-        barrio: barrioMap.get(p.barrio_id as string),
+        barrio: bd?.nombre,
+        ciudad: bd?.ciudad,
         tipo: typeMap.get(p.property_type_id as string),
         status: p.status as string,
         operation_type: p.operation_type as string,
@@ -386,6 +486,8 @@ export async function fetchTopQuotedProperties(limit: number) {
         main_image: imagesMap.get(p.id as string),
         quote_count: p.quote_count,
         created_at: p.created_at as string | null | undefined,
+        plano_url: (p as { plano_url?: string | null }).plano_url,
+        payment_plans: (p as { payment_plans?: unknown }).payment_plans,
       });
     });
   } catch (e) {
@@ -404,6 +506,16 @@ export async function fetchPropertyById(id: string) {
       .eq("id", id)
       .single();
 
+    if (error && looksLikeMissingColumnError(error, "plano_url")) {
+      const second = await osorio
+        .from("properties")
+        .select(PROPERTIES_SELECT_WITHOUT_PLANO)
+        .eq("id", id)
+        .single();
+      data = second.data as any;
+      error = second.error;
+    }
+
     if (error && looksLikeMissingColumnError(error, "price_currency")) {
       const second = await osorio
         .from("properties")
@@ -421,13 +533,14 @@ export async function fetchPropertyById(id: string) {
     if (!data) return null;
 
     const loc = data.location_url as string | null;
-    const [barrioMap, typeMap, imagesMap, shortMapsResolved] = await Promise.all([
-      fetchBarriosMap([data.barrio_id as string]),
+    const [barrioDetailMap, typeMap, imagesMap, shortMapsResolved] = await Promise.all([
+      fetchBarriosDetailMap([data.barrio_id as string]),
       fetchPropertyTypesMap([data.property_type_id as string]),
       fetchMainImagesMap([data.id as string]),
       resolveShortGoogleMapsUrls([loc]),
     ]);
     const forCoords = loc ? shortMapsResolved.get(loc) ?? loc : null;
+    const bd = barrioDetailMap.get(data.barrio_id as string);
 
     return mapToPropertyViewModel({
       id: data.id as string,
@@ -435,7 +548,8 @@ export async function fetchPropertyById(id: string) {
       description: data.description as string | null,
       price: data.price,
       price_currency: (data as { price_currency?: unknown }).price_currency,
-      barrio: barrioMap.get(data.barrio_id as string),
+      barrio: bd?.nombre,
+      ciudad: bd?.ciudad,
       tipo: typeMap.get(data.property_type_id as string),
       status: data.status as string,
       operation_type: data.operation_type as string,
@@ -449,6 +563,8 @@ export async function fetchPropertyById(id: string) {
       main_image: imagesMap.get(data.id as string),
       quote_count: data.quote_count,
       created_at: data.created_at as string | null | undefined,
+      plano_url: (data as { plano_url?: string | null }).plano_url,
+      payment_plans: (data as { payment_plans?: unknown }).payment_plans,
     });
   } catch (e) {
     logDbError("fetchPropertyById", e);
@@ -481,21 +597,43 @@ export async function fetchPropertyImagesById(propertyId: string) {
   }
 }
 
-export async function fetchNeighborhoodsForSelect() {
+export type NeighborhoodSelectOption = { id: string; name: string; ciudad_id?: string | null };
+
+export async function fetchNeighborhoodsForSelect(): Promise<NeighborhoodSelectOption[]> {
   try {
-    const { data, error } = await osorio
-      .from("barrios")
-      .select("id, nombre")
-      .order("nombre");
+    let { data, error } = await osorio.from("barrios").select("id, nombre, ciudad_id").order("nombre");
+    if (error && looksLikeMissingColumnError(error, "ciudad_id")) {
+      const r = await osorio.from("barrios").select("id, nombre").order("nombre");
+      data = r.data as any;
+      error = r.error;
+    }
     if (error) {
       logDbError("fetchNeighborhoodsForSelect", error);
       return fallbackNeighborhoodsSelect();
     }
     if (!data || data.length === 0) return [];
-    return (data ?? []).map((b: any) => ({ id: b.id as string, name: b.nombre as string }));
+    return (data ?? []).map((b: any) => ({
+      id: b.id as string,
+      name: b.nombre as string,
+      ciudad_id: (b.ciudad_id as string | null | undefined) ?? undefined,
+    }));
   } catch (e) {
     logDbError("fetchNeighborhoodsForSelect", e);
     return fallbackNeighborhoodsSelect();
+  }
+}
+
+export async function fetchCitiesForSelect(): Promise<Array<{ id: string; name: string }>> {
+  try {
+    const { data, error } = await osorio.from("ciudades").select("id, nombre").order("nombre");
+    if (error) {
+      logDbError("fetchCitiesForSelect", error);
+      return [];
+    }
+    return (data ?? []).map((c: { id: string; nombre: string }) => ({ id: c.id, name: c.nombre }));
+  } catch (e) {
+    logDbError("fetchCitiesForSelect", e);
+    return [];
   }
 }
 

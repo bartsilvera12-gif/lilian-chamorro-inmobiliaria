@@ -14,6 +14,9 @@
  *   LILIAN_ADMIN_FULL_NAME  (opcional)
  *   LILIAN_STORE_ID         (opcional, si profiles.store_id es NOT NULL)
  *
+ * UUID fijo en Auth (opcional; p. ej. para alinear con otro entorno):
+ *   LILIAN_AUTH_USER_ID     (o AUTH_USER_ID) — se pasa a createUser; si ya existe, se actualiza email/contraseña.
+ *
  * Compatibilidad legacy (también soportado):
  *   OSORIO_ADMIN_EMAIL / OSORIO_ADMIN_PASSWORD / OSORIO_ADMIN_FULL_NAME / OSORIO_STORE_ID
  *
@@ -80,6 +83,11 @@ const storeId =
   process.env.OSORIO_STORE_ID?.trim() ||
   null;
 
+const fixedUserId =
+  process.env.LILIAN_AUTH_USER_ID?.trim() ||
+  process.env.AUTH_USER_ID?.trim() ||
+  null;
+
 if (!url || !serviceKey) {
   console.error(
     'Falta VITE_SUPABASE_URL (o SUPABASE_URL) y/o SUPABASE_SERVICE_ROLE_KEY en .env.local',
@@ -129,19 +137,80 @@ async function findUserIdByEmail(target) {
 
 let userId;
 
-const created = await supabase.auth.admin.createUser({
+const createPayload = {
   email,
   password,
   email_confirm: true,
-});
+};
+if (fixedUserId) {
+  createPayload.id = fixedUserId;
+}
+
+const created = await supabase.auth.admin.createUser(createPayload);
 
 if (!created.error && created.data?.user?.id) {
   userId = created.data.user.id;
-  console.log('Usuario creado en Auth:', email);
+  console.log('Usuario creado en Auth:', email, 'id=', userId);
+} else if (fixedUserId && created.error) {
+  const existing = await supabase.auth.admin.getUserById(fixedUserId);
+  if (!existing.error && existing.data?.user) {
+    userId = fixedUserId;
+    const upd = await supabase.auth.admin.updateUserById(fixedUserId, {
+      email,
+      password,
+      email_confirm: true,
+    });
+    if (upd.error) {
+      console.error('Error actualizando usuario existente (id fijo):', upd.error.message);
+      process.exit(1);
+    }
+    console.log(
+      'Ya existía usuario con LILIAN_AUTH_USER_ID; email, contraseña y confirmación actualizados:',
+      email,
+    );
+  } else if (isAlreadyRegistered(created.error)) {
+    userId = await findUserIdByEmail(email);
+    if (!userId) {
+      console.error('No se encontró el usuario existente:', created.error.message);
+      process.exit(1);
+    }
+    if (fixedUserId && userId !== fixedUserId) {
+      console.error(
+        'Conflicto: el email pertenece a otro id (' +
+          userId +
+          ') distinto de LILIAN_AUTH_USER_ID (' +
+          fixedUserId +
+          '). Revisá email o id.',
+      );
+      process.exit(1);
+    }
+    const upd = await supabase.auth.admin.updateUserById(userId, {
+      password,
+      email_confirm: true,
+    });
+    if (upd.error) {
+      console.error('Error actualizando contraseña:', upd.error.message);
+      process.exit(1);
+    }
+    console.log('Usuario ya existía; contraseña y email_confirm actualizados:', email);
+  } else {
+    console.error('Auth:', created.error?.message || created.error);
+    process.exit(1);
+  }
 } else if (created.error && isAlreadyRegistered(created.error)) {
   userId = await findUserIdByEmail(email);
   if (!userId) {
     console.error('No se encontró el usuario existente:', created.error.message);
+    process.exit(1);
+  }
+  if (fixedUserId && userId !== fixedUserId) {
+    console.error(
+      'Conflicto: el email pertenece a otro id (' +
+        userId +
+        ') distinto de LILIAN_AUTH_USER_ID (' +
+        fixedUserId +
+        ').',
+    );
     process.exit(1);
   }
   const upd = await supabase.auth.admin.updateUserById(userId, {

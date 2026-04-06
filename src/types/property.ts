@@ -1,5 +1,11 @@
 export type PropertyPriceCurrency = 'USD' | 'PYG';
 
+/** Plan de cuotas configurable en admin (JSON en BD). */
+export interface PaymentPlanEntry {
+  cuotas: number;
+  label?: string;
+}
+
 export interface Property {
   id: string;
   // El panel admin original usaba multi-tenant por store_id.
@@ -11,6 +17,8 @@ export interface Property {
   /** Moneda en que está expresado `price` (columna `price_currency` en BD). */
   price_currency?: PropertyPriceCurrency;
   barrio: string;
+  /** Ciudad del barrio (tabla `ciudades`). */
+  ciudad?: string;
   // Tipo de propiedad (proviene de `property_types.nombre`).
   tipo: string;
   // Estado (proviene de `properties.status`).
@@ -32,6 +40,9 @@ export interface Property {
   bedrooms?: number;
   bathrooms?: number;
   area_m2?: number;
+  /** URL de imagen o PDF del plano. */
+  plano_url?: string;
+  payment_plans?: PaymentPlanEntry[];
 }
 
 export interface PropertyImage {

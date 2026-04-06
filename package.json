@@ -13,6 +13,8 @@
     "test:watch": "vitest",
     "create-admin": "node scripts/create-osorio-admin.mjs",
     "create-lilian-admin": "node scripts/create-osorio-admin.mjs",
+    "set-auth-password": "node scripts/set-auth-password.mjs",
+    "upsert-lilian-profile": "node scripts/upsert-lilian-profile.mjs",
     "docs:record-change": "node scripts/docs/record-change.mjs",
     "docs:setup-git-hooks": "node scripts/docs/setup-git-hooks.mjs"
   },

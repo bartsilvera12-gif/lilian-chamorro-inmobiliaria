@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Building2, MessageSquare, MapPin, LogOut, X, Tag, Trophy, Star, Construction } from 'lucide-react';
+import { LayoutDashboard, Building2, MessageSquare, MapPin, LogOut, X, Tag, Trophy, Star, Construction, MapPinned } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/admin/success-cases', labelKey: 'admin.nav.success_cases', icon: Trophy },
   { to: '/admin/testimonials', labelKey: 'admin.nav.testimonials', icon: Star },
   { to: '/admin/developments', labelKey: 'admin.nav.developments', icon: Construction },
+  { to: '/admin/cities', labelKey: 'admin.nav.cities', icon: MapPinned },
   { to: '/admin/neighborhoods', labelKey: 'admin.nav.neighborhoods', icon: MapPin },
   { to: '/admin/property-types', labelKey: 'admin.nav.property_types', icon: Tag },
 ];

@@ -4,12 +4,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/layout/Layout";
 import PropertyCard from "@/components/property/PropertyCard";
 import StyledSelect from "@/components/ui/StyledSelect";
-import { SlidersHorizontal, MapPin, Building2, Tag, ArrowUpDown, Search } from "lucide-react";
+import { SlidersHorizontal, MapPin, Building2, Tag, ArrowUpDown, Search, MapPinned } from "lucide-react";
 import type { Property } from "@/types/property";
 import {
   fetchNeighborhoodsForSelect,
   fetchPropertyTypesForSelect,
   fetchPublicProperties,
+  fetchCitiesForSelect,
 } from "@/lib/osorioRepository";
 import { priceToComparablePyg, type PriceCurrency } from "@/lib/currency";
 
@@ -19,6 +20,7 @@ export default function Properties() {
   const { t } = useLanguage();
   const [searchParams] = useSearchParams();
 
+  const [ciudad, setCiudad] = useState(searchParams.get("ciudad") || "");
   const [barrio, setBarrio] = useState(searchParams.get("barrio") || "");
   const [tipo, setTipo] = useState(searchParams.get("tipo") || "");
   const [operacion, setOperacion] = useState(searchParams.get("operacion") || "");
@@ -27,7 +29,8 @@ export default function Properties() {
   const [showFilters, setShowFilters] = useState(true);
 
   const [properties, setProperties] = useState<Property[]>([]);
-  const [barrios, setBarrios] = useState<Array<{ id: string; name: string }>>([]);
+  const [ciudades, setCiudades] = useState<Array<{ id: string; name: string }>>([]);
+  const [barrios, setBarrios] = useState<Array<{ id: string; name: string; ciudad_id?: string | null }>>([]);
   const [tipos, setTipos] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,15 +38,17 @@ export default function Properties() {
     let active = true;
     (async () => {
       setLoading(true);
-      const [props, b, pt] = await Promise.all([
+      const [props, b, pt, c] = await Promise.all([
         fetchPublicProperties(),
         fetchNeighborhoodsForSelect(),
         fetchPropertyTypesForSelect(),
+        fetchCitiesForSelect(),
       ]);
       if (!active) return;
       setProperties(props);
       setBarrios(b);
       setTipos(pt);
+      setCiudades(c);
       setLoading(false);
     })();
     return () => {
@@ -51,8 +56,19 @@ export default function Properties() {
     };
   }, []);
 
+  const barriosFiltrados = useMemo(() => {
+    if (!ciudad) return barrios;
+    const cid = ciudades.find((c) => c.name === ciudad)?.id;
+    if (!cid) return barrios;
+    return barrios.filter((b) => b.ciudad_id === cid);
+  }, [barrios, ciudad, ciudades]);
+
   const filtered = useMemo(() => {
     let list = [...properties];
+    if (ciudad.trim()) {
+      const cnorm = ciudad.trim().toLowerCase();
+      list = list.filter((p) => (p.ciudad || "").trim().toLowerCase() === cnorm);
+    }
     if (barrio) list = list.filter((p) => p.barrio === barrio);
     if (tipo) list = list.filter((p) => p.tipo === tipo);
     if (operacion) list = list.filter((p) => p.operacion === operacion);
@@ -62,7 +78,8 @@ export default function Properties() {
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.description.toLowerCase().includes(q) ||
-          p.barrio.toLowerCase().includes(q)
+          p.barrio.toLowerCase().includes(q) ||
+          (p.ciudad && p.ciudad.toLowerCase().includes(q))
       );
     }
     switch (sort) {
@@ -84,7 +101,7 @@ export default function Properties() {
         break;
     }
     return list;
-  }, [properties, barrio, tipo, operacion, query, sort]);
+  }, [properties, ciudad, barrio, tipo, operacion, query, sort]);
 
   return (
     <Layout>
@@ -106,10 +123,16 @@ export default function Properties() {
           </button>
 
           {showFilters && (
-            <div className="animate-reveal grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-8 p-4 rounded-xl bg-card border border-border">
+            <div className="animate-reveal grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-8 p-4 rounded-xl bg-card border border-border">
+              {ciudades.length > 0 && (
+                <StyledSelect icon={MapPinned} value={ciudad} onChange={(e) => { setCiudad(e.target.value); setBarrio(""); }}>
+                  <option value="">{t('hero.search.all_ciudades')}</option>
+                  {ciudades.map((c) => (<option key={c.id} value={c.name}>{c.name}</option>))}
+                </StyledSelect>
+              )}
               <StyledSelect icon={MapPin} value={barrio} onChange={e => setBarrio(e.target.value)}>
                 <option value="">{t('hero.search.all_barrios')}</option>
-                {barrios.map((b) => (<option key={b.id} value={b.name}>{b.name}</option>))}
+                {barriosFiltrados.map((b) => (<option key={b.id} value={b.name}>{b.name}</option>))}
               </StyledSelect>
               <StyledSelect icon={Building2} value={tipo} onChange={e => setTipo(e.target.value)}>
                 <option value="">{t('hero.search.all_tipos')}</option>

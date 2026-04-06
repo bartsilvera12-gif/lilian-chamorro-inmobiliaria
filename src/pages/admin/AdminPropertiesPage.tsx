@@ -15,6 +15,7 @@ import { formatPropertyPrice, priceToComparablePyg, type PriceCurrency } from '@
 import {
   PROPERTIES_SELECT_FULL,
   PROPERTIES_SELECT_LEGACY,
+  PROPERTIES_SELECT_WITHOUT_PLANO,
   looksLikeMissingColumnError,
   fetchAllPropertiesRows,
 } from '@/lib/osorioRepository';
@@ -60,6 +61,9 @@ export default function AdminPropertiesPage() {
       osorio.from('barrios').select('id, nombre').order('nombre'),
     ]);
     let pRes = pResFirst;
+    if (pRes.error && looksLikeMissingColumnError(pRes.error, 'plano_url')) {
+      pRes = await fetchAllPropertiesRows(PROPERTIES_SELECT_WITHOUT_PLANO, orderCol, false);
+    }
     if (pRes.error && looksLikeMissingColumnError(pRes.error, 'price_currency')) {
       pRes = await fetchAllPropertiesRows(PROPERTIES_SELECT_LEGACY, orderCol, false);
     }

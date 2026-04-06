@@ -3,7 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Layout from '@/components/layout/Layout';
 import QuoteModal from '@/components/property/QuoteModal';
-import { ArrowLeft, Bed, Bath, Maximize, MapPin, Calendar, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Maximize, MapPin, Calendar, MessageSquare, ChevronLeft, ChevronRight, FileText, ExternalLink, Wallet } from 'lucide-react';
 import type { Property } from '@/types/property';
 import { formatPropertyPrice, type PriceCurrency } from '@/lib/currency';
 import { fetchPropertyById, fetchPropertyImagesById } from '@/lib/osorioRepository';
@@ -99,6 +99,11 @@ export default function PropertyDetail() {
   const prevImg = () => setActiveImg((i) => (i - 1 + galleryImages.length) % galleryImages.length);
   const nextImg = () => setActiveImg((i) => (i + 1) % galleryImages.length);
 
+  const planoUrl = property.plano_url?.trim();
+  const planoIsPdf = planoUrl
+    ? planoUrl.split('?')[0].toLowerCase().endsWith('.pdf')
+    : false;
+
   return (
     <Layout>
       <div className="py-8 md:py-12">
@@ -155,11 +160,28 @@ export default function PropertyDetail() {
                 </div>
                 <h1 className="text-2xl md:text-3xl font-serif font-bold text-foreground mb-1">{property.title}</h1>
                 <p className="text-sm text-muted-foreground flex items-center gap-1 font-sans">
-                  <MapPin className="w-3.5 h-3.5" /> {property.barrio} · {property.tipo}
+                  <MapPin className="w-3.5 h-3.5" />
+                  {property.ciudad ? `${property.ciudad} · ` : ''}{property.barrio} · {property.tipo}
                 </p>
                 <p className="text-2xl md:text-3xl font-bold text-accent mt-3 font-sans">
                   {formatPropertyPrice(property.price, (property.price_currency ?? 'PYG') as PriceCurrency, isRent)}
                 </p>
+                {property.payment_plans && property.payment_plans.length > 0 && (
+                  <div className="mt-4 p-4 rounded-lg bg-muted/60 border border-border/80">
+                    <h3 className="font-serif text-base font-bold text-foreground flex items-center gap-2 font-sans">
+                      <Wallet className="w-4 h-4 text-accent shrink-0" />
+                      {t('detail.payment_plans')}
+                    </h3>
+                    <ul className="mt-2 space-y-1.5 text-sm text-foreground/85 font-sans">
+                      {property.payment_plans.map((pl, i) => (
+                        <li key={i}>
+                          {pl.label ? <span className="font-medium">{pl.label}: </span> : null}
+                          {pl.cuotas} {t('detail.payment_plan_installments')}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Features */}
@@ -191,6 +213,28 @@ export default function PropertyDetail() {
                 <h2 className="font-serif text-lg font-bold text-foreground mb-3">{t('detail.description')}</h2>
                 <p className="text-foreground/75 leading-relaxed font-sans text-sm">{getLocalizedDescription(property.description)}</p>
               </div>
+
+              {planoUrl && (
+                <div className="animate-reveal animate-reveal-delay-2 space-y-3">
+                  <h2 className="font-serif text-lg font-bold text-foreground">{t('detail.planos')}</h2>
+                  <p className="text-sm text-muted-foreground font-sans">{t('detail.planos_hint')}</p>
+                  <a
+                    href={planoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent/80 font-sans"
+                  >
+                    <FileText className="w-4 h-4 shrink-0" />
+                    {planoIsPdf ? t('detail.planos_open_pdf') : t('detail.planos_open_image')}
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+                  {!planoIsPdf && (
+                    <div className="rounded-xl overflow-hidden border border-border bg-muted/40 max-h-[480px] flex items-center justify-center">
+                      <img src={planoUrl} alt="" className="w-full max-h-[480px] object-contain" />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {showAvailability && (
                 <div className="animate-reveal animate-reveal-delay-3 p-4 rounded-lg border border-accent/20 bg-accent/5">

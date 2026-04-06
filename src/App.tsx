@@ -18,6 +18,7 @@ import AdminPropertiesPage from "./pages/admin/AdminPropertiesPage";
 import AdminPropertyFormPage from "./pages/admin/AdminPropertyFormPage";
 import AdminQuotesPage from "./pages/admin/AdminQuotesPage";
 import AdminNeighborhoodsPage from "./pages/admin/AdminNeighborhoodsPage";
+import AdminCitiesPage from "./pages/admin/AdminCitiesPage";
 import AdminPropertyTypesPage from "./pages/admin/AdminPropertyTypesPage";
 import AdminSuccessCasesPage from "./pages/admin/AdminSuccessCasesPage";
 import AdminTestimonialsPage from "./pages/admin/AdminTestimonialsPage";
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/admin/success-cases" element={<AdminProtectedRoute><AdminSuccessCasesPage /></AdminProtectedRoute>} />
               <Route path="/admin/testimonials" element={<AdminProtectedRoute><AdminTestimonialsPage /></AdminProtectedRoute>} />
               <Route path="/admin/developments" element={<AdminProtectedRoute><AdminDevelopmentsPage /></AdminProtectedRoute>} />
+              <Route path="/admin/cities" element={<AdminProtectedRoute><AdminCitiesPage /></AdminProtectedRoute>} />
               <Route path="/admin/neighborhoods" element={<AdminProtectedRoute><AdminNeighborhoodsPage /></AdminProtectedRoute>} />
               <Route path="/admin/property-types" element={<AdminProtectedRoute><AdminPropertyTypesPage /></AdminProtectedRoute>} />
 

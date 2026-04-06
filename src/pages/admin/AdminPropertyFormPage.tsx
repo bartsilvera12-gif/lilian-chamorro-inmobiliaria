@@ -5,7 +5,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { osorio } from '@/lib/supabase';
 import AdminLayout from '@/components/admin/AdminLayout';
 import StyledSelect from '@/components/ui/StyledSelect';
-import { Loader2, ArrowLeft, MapPin, Building2, Tag, CheckCircle, Coins } from 'lucide-react';
+import { Loader2, ArrowLeft, MapPin, Building2, Tag, CheckCircle, Coins, FileText, Plus, Trash2 } from 'lucide-react';
+import { parsePaymentPlans } from '@/lib/osorioRepository';
 import { toast } from 'sonner';
 import {
   formatUsd,
@@ -34,6 +35,7 @@ interface PropertyFormData {
   maps_url: string;
   available_from: string;
   available_until: string;
+  plano_url: string;
 }
 
 const emptyForm: PropertyFormData = {
@@ -44,7 +46,7 @@ const emptyForm: PropertyFormData = {
   neighborhood_id: '',
   property_type: '',
   operation_type: 'venta', status: 'disponible', bedrooms: '', bathrooms: '', area_m2: '',
-  maps_url: '', available_from: '', available_until: '',
+  maps_url: '', available_from: '', available_until: '', plano_url: '',
 };
 
 const operationTypes = ['venta', 'alquiler'];
@@ -63,6 +65,9 @@ export default function AdminPropertyFormPage() {
   const [fetching, setFetching] = useState(true);
   const [quoteCount, setQuoteCount] = useState<number>(0);
   const [imageUrls, setImageUrls] = useState<string[]>(['']);
+  const [paymentPlanRows, setPaymentPlanRows] = useState<Array<{ cuotas: string; label: string }>>([
+    { cuotas: '', label: '' },
+  ]);
 
   useEffect(() => {
     const load = async () => {
@@ -106,8 +111,15 @@ export default function AdminPropertyFormPage() {
             maps_url: data.location_url ?? '',
             available_from: data.available_from ?? '',
             available_until: data.available_to ?? '',
+            plano_url: (data as { plano_url?: string | null }).plano_url ?? '',
           });
           setQuoteCount(data.quote_count ?? 0);
+          const parsedPlans = parsePaymentPlans((data as { payment_plans?: unknown }).payment_plans);
+          setPaymentPlanRows(
+            parsedPlans.length > 0
+              ? parsedPlans.map((p) => ({ cuotas: String(p.cuotas), label: p.label ?? '' }))
+              : [{ cuotas: '', label: '' }]
+          );
 
           const { data: imgs } = await osorio
             .from('property_images')
@@ -198,6 +210,11 @@ export default function AdminPropertyFormPage() {
       toast.error('La URL de ubicación debe ser una URL válida');
       return;
     }
+    const planoTrim = form.plano_url.trim();
+    if (planoTrim && !/^https?:\/\/.+/.test(planoTrim)) {
+      toast.error('La URL del plano debe ser http(s) válida');
+      return;
+    }
     setLoading(true);
 
     const priceUsd = parseUsdInput(form.price);
@@ -206,6 +223,13 @@ export default function AdminPropertyFormPage() {
       form.price_currency === 'USD'
         ? priceUsd
         : pyg;
+
+    const payment_plans = paymentPlanRows
+      .map((r) => ({
+        cuotas: parseInt(r.cuotas, 10),
+        label: r.label.trim() || undefined,
+      }))
+      .filter((r) => Number.isFinite(r.cuotas) && r.cuotas > 0);
 
     const payload = {
       title: form.title.trim(),
@@ -222,6 +246,8 @@ export default function AdminPropertyFormPage() {
       location_url: form.maps_url.trim() || null,
       available_from: form.available_from || null,
       available_to: form.available_until || null,
+      plano_url: planoTrim || null,
+      payment_plans,
     };
 
     let error;
@@ -386,6 +412,82 @@ export default function AdminPropertyFormPage() {
           <div>
             <label className={labelCls}>Ubicación (URL de Google Maps)</label>
             <input name="maps_url" type="url" value={form.maps_url} onChange={handleChange} placeholder="https://maps.google.com/..." className={inputCls} />
+          </div>
+
+          <div>
+            <label className={labelCls}>Plano (URL imagen o PDF)</label>
+            <input
+              name="plano_url"
+              type="url"
+              value={form.plano_url}
+              onChange={handleChange}
+              placeholder="https://..."
+              className={inputCls}
+            />
+            <p className="text-xs text-muted-foreground mt-1">Se muestra en la ficha pública debajo de la descripción.</p>
+          </div>
+
+          <div className="space-y-3">
+            <label className={`${labelCls} flex items-center gap-2`}>
+              <FileText className="w-4 h-4 text-muted-foreground" />
+              Planes de pago
+            </label>
+            <p className="text-xs text-muted-foreground -mt-1">Cantidad de cuotas; podés agregar una etiqueta opcional (ej. &quot;Banco&quot;).</p>
+            <div className="space-y-2">
+              {paymentPlanRows.map((row, index) => (
+                <div key={index} className="flex flex-wrap items-end gap-2">
+                  <div className="flex-1 min-w-[100px]">
+                    <span className="text-xs text-muted-foreground block mb-1">Cuotas</span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={row.cuotas}
+                      onChange={(e) =>
+                        setPaymentPlanRows((prev) =>
+                          prev.map((r, i) => (i === index ? { ...r, cuotas: e.target.value } : r))
+                        )
+                      }
+                      className={inputCls}
+                      placeholder="12"
+                    />
+                  </div>
+                  <div className="flex-[2] min-w-[140px]">
+                    <span className="text-xs text-muted-foreground block mb-1">Etiqueta (opcional)</span>
+                    <input
+                      type="text"
+                      value={row.label}
+                      onChange={(e) =>
+                        setPaymentPlanRows((prev) =>
+                          prev.map((r, i) => (i === index ? { ...r, label: e.target.value } : r))
+                        )
+                      }
+                      className={inputCls}
+                      placeholder="Ej. financiación"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPaymentPlanRows((prev) => {
+                        const next = prev.filter((_, i) => i !== index);
+                        return next.length > 0 ? next : [{ cuotas: '', label: '' }];
+                      })
+                    }
+                    className="p-2.5 rounded-lg border border-border text-muted-foreground hover:text-destructive hover:border-destructive/40 shrink-0"
+                    aria-label="Quitar plan"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setPaymentPlanRows((prev) => [...prev, { cuotas: '', label: '' }])}
+              className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" /> Añadir plan
+            </button>
           </div>
 
           <div className="space-y-2">
